@@ -1,0 +1,7 @@
+/vendor
+/composer.lock
+/examples/mycertandkey.crt
+/examples/SwisscomAISDemoClient-Certificate.*
+/examples/credentials*
+/examples/output/*.pdf
+/examples/_tmp/.ht*
