@@ -159,6 +159,9 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
         }
 
         $signatures = $this->_lastResult->SignResponse->SignatureObject->Other->SignatureObjects->ExtendedSignatureObject;
+        if (!is_array($signatures)) {
+            $signatures = array($signatures);
+        }
 
         foreach ($signatures AS $signatureData) {
             $signature = $signatureData->Base64Signature->_;
@@ -270,6 +273,9 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
         }
 
         $timestamps = $this->_lastResult->SignResponse->SignatureObject->Other->SignatureObjects->ExtendedSignatureObject;
+        if (!is_array($timestamps)) {
+            $timestamps = array($timestamps);
+        }
 
         foreach ($timestamps AS $timestampData) {
             $timestamp = $timestampData->Timestamp->RFC3161TimeStampToken;
