@@ -179,7 +179,10 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
                 $signer->saveSignature($documentData['tmpDocument'], $signature);
 
                 $document = SetaPDF_Core_Document::loadByFilename($tempWriter->getPath(), $writer);
-                $this->updateDss($document, $this->getSignatureFieldName());
+                if ($this->_addTimestamp && $this->_revokeInformation) {
+                    $this->updateDss($document, $this->getSignatureFieldName());
+                }
+
                 $document->save()->finish();
             }
         }
