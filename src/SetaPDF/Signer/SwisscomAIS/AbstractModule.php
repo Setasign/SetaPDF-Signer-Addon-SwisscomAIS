@@ -6,7 +6,6 @@
  * @category   SetaPDF
  * @package    SetaPDF_Signer
  * @license    http://www.apache.org/licenses/LICENSE-2.0
- * @version    $Id$
  */
 
 /**

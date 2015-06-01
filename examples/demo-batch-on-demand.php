@@ -9,7 +9,7 @@ date_default_timezone_set('Europe/Berlin');
 error_reporting(E_ALL | E_STRICT);
 ini_set('display_errors', 1);
 
-// load and register the autoload function
+// require the autoload class from Composer
 require_once('../vendor/autoload.php');
 
 if (file_exists('credentials-on-demand.php')) {
@@ -72,7 +72,7 @@ $files = array(
     ),
 );
 
-// create document instance by the filenames
+// create document instances by the filenames
 $documents = array();
 foreach ($files AS $file) {
     $documents[] = SetaPDF_Core_Document::loadByFilename(

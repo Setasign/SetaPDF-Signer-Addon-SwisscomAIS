@@ -49,7 +49,7 @@ $signer = new SetaPDF_Signer($document);
 $signer->setAllowSignatureContentLengthChange(false);
 $signer->setSignatureContentLength(32000);
 
-// set some signature properies
+// set some signature properties
 $signer->setLocation($_SERVER['SERVER_NAME']);
 $signer->setContactInfo('+01 2345 67890123');
 $signer->setReason('Testing Swisscom AIS');

@@ -9,7 +9,7 @@ date_default_timezone_set('Europe/Berlin');
 error_reporting(E_ALL | E_STRICT);
 ini_set('display_errors', 1);
 
-// load and register the autoload function
+// require the autoload class from Composer
 require_once('../vendor/autoload.php');
 
 if (file_exists('credentials.php')) {
@@ -59,7 +59,7 @@ $files = array(
     ),
 );
 
-// create document instance by the filenames
+// create document instances by the filenames
 $documents = array();
 foreach ($files AS $file) {
     $documents[] = SetaPDF_Core_Document::loadByFilename(
@@ -75,7 +75,10 @@ $batch->setAddRevokeInformation('PADES');
 // the signatures should include a timestamp, too
 $batch->setAddTimestamp(true);
 // sign the documents and add the revoke information to the DSS of the documents
-$batch->sign($documents, true);
+$batch->sign($documents, true, array(
+    SetaPDF_Signer::PROP_LOCATION => $_SERVER['SERVER_NAME'],
+    SetaPDF_Signer::PROP_REASON => 'Testing'
+));
 
 // get access to the last result object
 $result = $batch->getLastResult();

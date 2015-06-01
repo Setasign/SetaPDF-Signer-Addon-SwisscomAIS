@@ -6,7 +6,6 @@
  * @category   SetaPDF
  * @package    SetaPDF_Signer
  * @license    http://www.apache.org/licenses/LICENSE-2.0
- * @version    $Id$
  */
 
 /**
@@ -89,7 +88,7 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
      * @throws SetaPDF_Signer_Exception
      * @throws SetaPDF_Signer_Exception_ContentLength
      */
-    public function sign(array $documents, $updateDss = false)
+    public function sign(array $documents, $updateDss = false, $signatureProperties = array())
     {
         $digestMethod = $this->_getDigestMethod();
 
@@ -100,6 +99,11 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
             $signer = new SetaPDF_Signer($document);
             $signer->setSignatureContentLength($this->getSignatureContentLength());
             $signer->setSignatureFieldName($this->getSignatureFieldName());
+
+            foreach ($signatureProperties AS $name => $value) {
+                $signer->setSignatureProperty($name, $value);
+            }
+
             $tmpDocument = $signer->preSign(new SetaPDF_Core_Writer_TempFile());
 
             $data[$no] = array(
@@ -153,9 +157,15 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
 
         $signResult = $this->_lastResult->SignResponse->Result;
         if ($signResult->ResultMajor !== 'urn:oasis:names:tc:dss:1.0:resultmajor:Success') {
-            throw new SetaPDF_Signer_Exception(sprintf('Swisscom AIS webservice returned an error: %s',
+            $exception = new SetaPDF_Signer_SwisscomAIS_Exception(sprintf(
+                'Swisscom AIS webservice returned an error: %s',
                 $signResult->ResultMessage->_
             ));
+
+            $exception->setRequest($req);
+            $exception->setResult($this->_lastResult);
+
+            throw $exception;
         }
 
         $signatures = $this->_lastResult->SignResponse->SignatureObject->Other->SignatureObjects->ExtendedSignatureObject;
@@ -204,6 +214,7 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
      * @throws SetaPDF_Core_Exception
      * @throws SetaPDF_Signer_Exception
      * @throws SetaPDF_Signer_Exception_ContentLength
+     * @throws SetaPDF_Signer_SwisscomAIS_Exception
      */
     public function timestamp(array $documents, $updateDss = false)
     {
@@ -267,9 +278,14 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
 
         $signResult = $this->_lastResult->SignResponse->Result;
         if ($signResult->ResultMajor !== 'urn:oasis:names:tc:dss:1.0:resultmajor:Success') {
-            throw new SetaPDF_Signer_Exception(sprintf('Swisscom AIS webservice returned an error: %s',
+            $exception = new SetaPDF_Signer_SwisscomAIS_Exception(sprintf('Swisscom AIS webservice returned an error: %s',
                 $signResult->ResultMessage->_
             ));
+
+            $exception->setRequest($req);
+            $exception->setResult($this->_lastResult);
+
+            throw $exception;
         }
 
         $timestamps = $this->_lastResult->SignResponse->SignatureObject->Other->SignatureObjects->ExtendedSignatureObject;

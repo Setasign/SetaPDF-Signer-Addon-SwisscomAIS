@@ -6,7 +6,6 @@
  * @category   SetaPDF
  * @package    SetaPDF_Signer
  * @license    http://www.apache.org/licenses/LICENSE-2.0
- * @version    $Id$
  */
 
 /**
@@ -76,9 +75,14 @@ class SetaPDF_Signer_SwisscomAIS_Module extends SetaPDF_Signer_SwisscomAIS_Abstr
 
         $signResult = $this->_lastResult->SignResponse->Result;
         if ($signResult->ResultMajor !== 'urn:oasis:names:tc:dss:1.0:resultmajor:Success') {
-            throw new SetaPDF_Signer_Exception(sprintf('Swisscom AIS webservice returned an error: %s',
+            $exception = new SetaPDF_Signer_SwisscomAIS_Exception(sprintf('Swisscom AIS webservice returned an error: %s',
                 $signResult->ResultMessage->_
             ));
+
+            $exception->setRequest($req);
+            $exception->setResult($this->_lastResult);
+
+            throw $exception;
         }
 
         return $this->_lastResult->SignResponse->SignatureObject->Base64Signature->_;
@@ -129,10 +133,15 @@ class SetaPDF_Signer_SwisscomAIS_Module extends SetaPDF_Signer_SwisscomAIS_Abstr
         
         $signResult = $this->_lastResult->SignResponse->Result;
         if ($signResult->ResultMajor !== 'urn:oasis:names:tc:dss:1.0:resultmajor:Success') {
-
-            throw new SetaPDF_Signer_Exception(sprintf('Swisscom AIS webservice returned an error: %s',
+            $exception = new SetaPDF_Signer_SwisscomAIS_Exception(sprintf(
+                'Swisscom AIS webservice returned an error: %s',
                 $signResult->ResultMessage->_
             ));
+
+            $exception->setRequest($req);
+            $exception->setResult($this->_lastResult);
+
+            throw $exception;
         }
 
         return $this->_lastResult->SignResponse->SignatureObject->Timestamp->RFC3161TimeStampToken;

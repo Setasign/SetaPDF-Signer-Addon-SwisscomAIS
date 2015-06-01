@@ -9,7 +9,7 @@ date_default_timezone_set('Europe/Berlin');
 error_reporting(E_ALL | E_STRICT);
 ini_set('display_errors', 1);
 
-// load and register the autoload function
+// require the autoload class from Composer
 require_once('../vendor/autoload.php');
 
 // prepare on-demand data
@@ -62,7 +62,7 @@ $signer = new SetaPDF_Signer($document);
 $signer->setAllowSignatureContentLengthChange(false);
 $signer->setSignatureContentLength(32000);
 
-// set some signature properies
+// set some signature properties
 $signer->setLocation($_SERVER['SERVER_NAME']);
 $signer->setContactInfo('+01 2345 67890123');
 $signer->setReason('testing...');
