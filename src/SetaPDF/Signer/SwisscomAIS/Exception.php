@@ -64,7 +64,7 @@ class SetaPDF_Signer_SwisscomAIS_Exception extends SetaPDF_Signer_Exception
      */
     public function getResult()
     {
-        require $this->_result;
+        return $this->_result;
     }
 
     /**
