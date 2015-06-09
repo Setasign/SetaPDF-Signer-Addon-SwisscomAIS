@@ -81,4 +81,34 @@ class SetaPDF_Signer_SwisscomAIS_Exception extends SetaPDF_Signer_Exception
 
         return null;
     }
+
+    /**
+     * Get the ResultMajor status code of the last response.
+     *
+     * @return string|boolean
+     */
+    public function getResultMajor()
+    {
+        $lastResult = $this->getResult();
+        if (isset($lastResult->SignResponse->Result->ResultMajor)) {
+            return $lastResult->SignResponse->Result->ResultMajor;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get the ResultMinor status code of the last response.
+     *
+     * @return string|boolean
+     */
+    public function getResultMinor()
+    {
+        $lastResult = $this->getResult();
+        if (isset($lastResult->SignResponse->Result->ResultMinor)) {
+            return $lastResult->SignResponse->Result->ResultMinor;
+        }
+
+        return false;
+    }
 }

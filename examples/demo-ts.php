@@ -61,5 +61,14 @@ $module->setAddRevokeInformation('PADES');
 // pass the timestamp module to the signer instance
 $signer->setTimestampModule($module);
 
-// create the document timestamp
-$signer->timestamp();
+try {
+    // create the document timestamp
+    $signer->timestamp();
+} catch (SetaPDF_Signer_SwisscomAIS_Exception $e) {
+    echo 'Error in SwisscomAIS: ' . $e->getMessage() . ' with code ' . $e->getCode() . '<br />';
+    /* Get the AIS Error details */
+    echo "<pre>";
+    var_dump($e->getResultMajor());
+    var_dump($e->getResultMinor());
+    echo "</pre>";
+}

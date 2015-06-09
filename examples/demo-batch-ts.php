@@ -72,8 +72,18 @@ foreach ($files AS $file) {
 $batch = new SetaPDF_Signer_SwisscomAIS_Batch($customerId, $clientOptions);
 // let's add PADES revoke information to the resulting signatures
 $batch->setAddRevokeInformation('PADES');
-// timestamp the documents and add the revoke information to the DSS of the documents
-$batch->timestamp($documents, true);
+try {
+    // timestamp the documents and add the revoke information to the DSS of the documents
+    $batch->timestamp($documents, true);
+} catch (SetaPDF_Signer_SwisscomAIS_Exception $e) {
+    echo 'Error in SwisscomAIS: ' . $e->getMessage() . ' with code ' . $e->getCode() . '<br />';
+    /* Get the AIS Error details */
+    echo "<pre>";
+    var_dump($e->getResultMajor());
+    var_dump($e->getResultMinor());
+    echo "</pre>";
+    die();
+}
 
 // get access to the last result object
 $result = $batch->getLastResult();

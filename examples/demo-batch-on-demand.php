@@ -93,8 +93,18 @@ if ($approvalNo !== '') {
     $batch->setOnDemandOptions($signerDn, $approvalNo, $approvalMsg, $approvalLang, $approvalSn);
 }
 
-// sign the documents and add the revoke information to the DSS of the documents
-$batch->sign($documents, true);
+try {
+    // sign the documents and add the revoke information to the DSS of the documents
+    $batch->sign($documents, true);
+} catch (SetaPDF_Signer_SwisscomAIS_Exception $e) {
+    echo 'Error in SwisscomAIS: ' . $e->getMessage() . ' with code ' . $e->getCode() . '<br />';
+    /* Get the AIS Error details */
+    echo "<pre>";
+    var_dump($e->getResultMajor());
+    var_dump($e->getResultMinor());
+    echo "</pre>";
+    die();
+}
 
 // get access to the last result object
 $result = $batch->getLastResult();

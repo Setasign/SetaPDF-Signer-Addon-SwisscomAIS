@@ -74,11 +74,22 @@ $batch = new SetaPDF_Signer_SwisscomAIS_Batch($customerId, $clientOptions);
 $batch->setAddRevokeInformation('PADES');
 // the signatures should include a timestamp, too
 $batch->setAddTimestamp(true);
-// sign the documents and add the revoke information to the DSS of the documents
-$batch->sign($documents, true, array(
-    SetaPDF_Signer::PROP_LOCATION => $_SERVER['SERVER_NAME'],
-    SetaPDF_Signer::PROP_REASON => 'Testing'
-));
+
+try {
+    // sign the documents and add the revoke information to the DSS of the documents
+    $batch->sign($documents, true, array(
+        SetaPDF_Signer::PROP_LOCATION => $_SERVER['SERVER_NAME'],
+        SetaPDF_Signer::PROP_REASON => 'Testing'
+    ));
+} catch (SetaPDF_Signer_SwisscomAIS_Exception $e) {
+    echo 'Error in SwisscomAIS: ' . $e->getMessage() . ' with code ' . $e->getCode() . '<br />';
+    /* Get the AIS Error details */
+    echo "<pre>";
+    var_dump($e->getResultMajor());
+    var_dump($e->getResultMinor());
+    echo "</pre>";
+    die();
+}
 
 // get access to the last result object
 $result = $batch->getLastResult();
