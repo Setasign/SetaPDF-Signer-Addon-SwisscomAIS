@@ -75,10 +75,7 @@ class SetaPDF_Signer_SwisscomAIS_Module extends SetaPDF_Signer_SwisscomAIS_Abstr
 
         $signResult = $this->_lastResult->SignResponse->Result;
         if ($signResult->ResultMajor !== 'urn:oasis:names:tc:dss:1.0:resultmajor:Success') {
-            $exception = new SetaPDF_Signer_SwisscomAIS_Exception(sprintf('Swisscom AIS webservice returned an error: %s',
-                $signResult->ResultMessage->_
-            ));
-
+            $exception = new SetaPDF_Signer_SwisscomAIS_Exception($signResult->ResultMessage->_);
             $exception->setRequest($req);
             $exception->setResult($this->_lastResult);
 
@@ -133,11 +130,7 @@ class SetaPDF_Signer_SwisscomAIS_Module extends SetaPDF_Signer_SwisscomAIS_Abstr
         
         $signResult = $this->_lastResult->SignResponse->Result;
         if ($signResult->ResultMajor !== 'urn:oasis:names:tc:dss:1.0:resultmajor:Success') {
-            $exception = new SetaPDF_Signer_SwisscomAIS_Exception(sprintf(
-                'Swisscom AIS webservice returned an error: %s',
-                $signResult->ResultMessage->_
-            ));
-
+            $exception = new SetaPDF_Signer_SwisscomAIS_Exception($signResult->ResultMessage->_);
             $exception->setRequest($req);
             $exception->setResult($this->_lastResult);
 
