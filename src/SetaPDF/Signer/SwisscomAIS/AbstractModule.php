@@ -258,6 +258,6 @@ abstract class SetaPDF_Signer_SwisscomAIS_AbstractModule extends SetaPDF_Signer_
      */
     protected function _createRequestId()
     {
-        return 'AIS.PHP.' . rand(89999, 10000) . '.' . rand(8999, 1000);
+        return 'SetaPDF.' . rand(89999, 10000) . '.' . rand(8999, 1000);
     }
 }
