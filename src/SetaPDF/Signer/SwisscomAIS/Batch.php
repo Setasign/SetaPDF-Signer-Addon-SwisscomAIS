@@ -34,6 +34,13 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
     protected $_fieldName = 'Signature';
 
     /**
+     * The last signature/timestamp result.
+     *
+     * @var array
+     */
+    protected $_signatures = array();
+
+    /**
      * Set the signature content length that will be used to reserve space for the final signature.
      *
      * @param integer $length The length of the signature content.
@@ -90,6 +97,7 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
      */
     public function sign(array $documents, $updateDss = false, $signatureProperties = array())
     {
+        $this->_signatures = array();
         $digestMethod = $this->_getDigestMethod();
 
         $data = array();
@@ -172,6 +180,8 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
         foreach ($signatures AS $signatureData) {
             $signature = $signatureData->Base64Signature->_;
             $no = $signatureData->WhichDocument;
+
+            $this->_signatures[$no] = $signature;
 
             $documentData = $data[$no];
             /**
@@ -290,6 +300,8 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
             $timestamp = $timestampData->Timestamp->RFC3161TimeStampToken;
             $no = $timestampData->WhichDocument;
 
+            $this->_signatures[$no] = $timestamp;
+
             $documentData = $data[$no];
             /**
              * @var $signer SetaPDF_Signer
@@ -311,5 +323,15 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
         }
 
         return true;
+    }
+
+    /**
+     * Get the last signatures/timestamps.
+     *
+     * @return array
+     */
+    public function getSignatures()
+    {
+        return $this->_signatures;
     }
 }

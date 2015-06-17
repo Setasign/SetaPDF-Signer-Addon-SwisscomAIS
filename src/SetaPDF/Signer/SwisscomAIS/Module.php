@@ -22,6 +22,13 @@ class SetaPDF_Signer_SwisscomAIS_Module extends SetaPDF_Signer_SwisscomAIS_Abstr
     SetaPDF_Signer_Timestamp_Module_ModuleInterface
 {
     /**
+     * The last signature/timestamp result.
+     *
+     * @var string
+     */
+    protected $_signature;
+
+    /**
      * Implementation of the createSignautre() method.
      *
      * @param SetaPDF_Core_Reader_FilePath|string $tmpPath
@@ -82,7 +89,8 @@ class SetaPDF_Signer_SwisscomAIS_Module extends SetaPDF_Signer_SwisscomAIS_Abstr
             throw $exception;
         }
 
-        return $this->_lastResult->SignResponse->SignatureObject->Base64Signature->_;
+        $this->_signature = $this->_lastResult->SignResponse->SignatureObject->Base64Signature->_;
+        return $this->_signature;
     }
 
     /**
@@ -137,6 +145,17 @@ class SetaPDF_Signer_SwisscomAIS_Module extends SetaPDF_Signer_SwisscomAIS_Abstr
             throw $exception;
         }
 
-        return $this->_lastResult->SignResponse->SignatureObject->Timestamp->RFC3161TimeStampToken;
+        $this->_signature = $this->_lastResult->SignResponse->SignatureObject->Timestamp->RFC3161TimeStampToken;
+        return $this->_signature;
+    }
+
+    /**
+     * Get the last signature/timestamp.
+     *
+     * @return string
+     */
+    public function getSignature()
+    {
+        return $this->_signature;
     }
 }

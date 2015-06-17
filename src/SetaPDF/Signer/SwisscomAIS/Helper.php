@@ -30,37 +30,16 @@ class SetaPDF_Signer_SwisscomAIS_Helper
     {
         if ($signature instanceof SetaPDF_Signer_SwisscomAIS_Batch) {
             $result = array();
+            $signatures = $signature->getSignatures();
 
-            $lastResult = $signature->getLastResult();
-            $signatures = $lastResult->SignResponse->SignatureObject->Other->SignatureObjects->ExtendedSignatureObject;
-            if (!is_array($signatures)) {
-                $signatures = array($signatures);
-            }
-
-            foreach ($signatures AS $signatureData) {
-                if (isset($signatureData->Timestamp->RFC3161TimeStampToken)) {
-                    $signature = $signatureData->Timestamp->RFC3161TimeStampToken;;
-                } else {
-                    $signature = $signatureData->Base64Signature->_;
-                }
-
-                $no = $signatureData->WhichDocument;
-
+            foreach ($signatures AS $no => $signature) {
                 $result[$no] = self::_getSignatureData($signature);
             }
 
             return $result;
 
         } elseif ($signature instanceof SetaPDF_Signer_SwisscomAIS_Module) {
-            $lastResult = $signature->getLastResult();
-            // signature
-            if (isset($lastResult->SignResponse->SignatureObject->Base64Signature)) {
-                $signature = $lastResult->SignResponse->SignatureObject->Base64Signature->_;
-            } elseif (isset($lastResult->SignResponse->SignatureObject->Timestamp->RFC3161TimeStampToken)) {
-                $signature = $lastResult->SignResponse->SignatureObject->Timestamp->RFC3161TimeStampToken;
-            } else {
-                throw new InvalidArgumentException('Unable to get signature from module.');
-            }
+            $signature = $signature->getSignature();
         }
 
         return self::_getSignatureData($signature);
