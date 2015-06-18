@@ -82,6 +82,10 @@ if ($approvalNo !== '') {
 try {
     // sign the document with the use of the module
     $signer->sign($module);
+
+    // get information about the signing certificate:
+    // $signatureData = SetaPDF_Signer_SwisscomAIS_Helper::getSignatureData($module);
+
 } catch (SetaPDF_Signer_SwisscomAIS_Exception $e) {
     echo 'Error in SwisscomAIS: ' . $e->getMessage() . ' with code ' . $e->getCode() . '<br />';
     /* Get the AIS Error details */
