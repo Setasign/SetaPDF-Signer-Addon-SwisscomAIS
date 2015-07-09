@@ -88,16 +88,9 @@ class SetaPDF_Signer_SwisscomAIS_Helper
         if (isset($data['signerCertificate']['extensions']['subjectAltName'])) {
             $subjectAltName = $data['signerCertificate']['extensions']['subjectAltName'];
             // Format: 'DirName: serialNumber = ID-16981fa2-8998-4125-9a93-5fecbff74515, name = "+41798...", description = test.ch: Signer le document?, pseudonym = MIDCHEGU8GSH6K83'
-            $subjectAltNameArray = explode(', ', $subjectAltName);
-            foreach ($subjectAltNameArray as $value) {
-                if (preg_match("/pseudonym = (.*)/", $value, $match))
-                    $data['MIDSN'] = $match[1];
+            if (preg_match("/pseudonym = ([^,]*)/", $subjectAltName, $match)) {
+                $data['MIDSN'] = $match[1];
             }
-
-            // isn't this the same?
-            // if (preg_match("/pseudonym = (.*)/", $subjectAltName, $match)) {
-            //    $data['MIDSN'] = $match[1];
-            // }
         }
 
         return $data;

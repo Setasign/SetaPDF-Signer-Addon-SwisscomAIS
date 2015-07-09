@@ -85,6 +85,9 @@ try {
 
     // get information about the signing certificate:
     // $signatureData = SetaPDF_Signer_SwisscomAIS_Helper::getSignatureData($module);
+    // echo("Signed by: " . $signatureData['subject'] . PHP_EOL);
+    // echo("Unique Mobile ID serial number: " . $signatureData['MIDSN'] . PHP_EOL);
+
 
 } catch (SetaPDF_Signer_SwisscomAIS_Exception $e) {
     echo 'Error in SwisscomAIS: ' . $e->getMessage() . ' with code ' . $e->getCode() . '<br />';
@@ -92,5 +95,7 @@ try {
     echo "<pre>";
     var_dump($e->getResultMajor());
     var_dump($e->getResultMinor());
+    // Mobile ID user assistance URL in case online help is available
+    var_dump($e->getMobileIdUserAssistanceUrl());
     echo "</pre>";
 }
