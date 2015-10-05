@@ -19,7 +19,7 @@ if (file_exists('credentials.php')) {
     // path to your certificate and private key
     $cert = realpath('mycertandkey.crt');
     $passphrase = 'Passphrase for the private key in $cert';
-    // your <customer name>:<key entity>
+    // your <customer name>
     $customerId = "";
 }
 
