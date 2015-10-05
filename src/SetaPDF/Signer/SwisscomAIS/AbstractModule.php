@@ -223,6 +223,8 @@ abstract class SetaPDF_Signer_SwisscomAIS_AbstractModule extends SetaPDF_Signer_
     protected function _getDigestMethod()
     {
         switch ($this->getDigest()) {
+            case SetaPDF_Signer_Digest::SHA_1:
+                return 'http://www.w3.org/2000/09/xmldsig#sha1';
             case SetaPDF_Signer_Digest::SHA_256:
                 return 'http://www.w3.org/2001/04/xmlenc#sha256';
             case SetaPDF_Signer_Digest::SHA_384:
