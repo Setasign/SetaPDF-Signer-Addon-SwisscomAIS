@@ -54,9 +54,6 @@ $writer = new SetaPDF_Core_Writer_Http('Swisscom.pdf');
 // let's get the document
 $document = SetaPDF_Core_Document::loadByFilename('files/tektown/Laboratory-Report.pdf', $writer);
 
-// let's prepare the temporary file writer
-SetaPDF_Core_Writer_TempFile::setTempDir(realpath('_tmp/'));
-
 // now let's create a signer instance
 $signer = new SetaPDF_Signer($document);
 $signer->setAllowSignatureContentLengthChange(false);

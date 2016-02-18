@@ -19,7 +19,9 @@
  */
 class SetaPDF_Signer_SwisscomAIS_Module extends SetaPDF_Signer_SwisscomAIS_AbstractModule implements
     SetaPDF_Signer_Signature_Module_ModuleInterface,
-    SetaPDF_Signer_Timestamp_Module_ModuleInterface
+    SetaPDF_Signer_Timestamp_Module_ModuleInterface,
+    SetaPDF_Signer_Signature_DictionaryInterface,
+    SetaPDF_Signer_Signature_DocumentInterface
 {
     /**
      * The last signature/timestamp result.
@@ -29,13 +31,54 @@ class SetaPDF_Signer_SwisscomAIS_Module extends SetaPDF_Signer_SwisscomAIS_Abstr
     protected $_signature;
 
     /**
+     * Updates the signature dictionary.
+     *
+     * PAdES requires special Filter and SubFilter entries in the signature dictionary.
+     *
+     * @param SetaPDF_Core_Type_Dictionary $dictionary
+     * @throws SetaPDF_Signer_Exception
+     */
+    public function updateSignatureDictionary(SetaPDF_Core_Type_Dictionary $dictionary)
+    {
+        // break if the instance is used as a time stamp module
+        if ($dictionary->getValue('Type')->getValue() == 'DocTimeStamp') {
+            return;
+        }
+
+        /* do some checks:
+         * - entry with the key M in the Signature Dictionary
+         */
+        if (!$dictionary->offsetExists('M')) {
+            throw new SetaPDF_Signer_Exception(
+                'The key M (the time of signing) shall be present in the signature dictionary to conform with PAdES.'
+            );
+        }
+
+        $dictionary['SubFilter'] = new SetaPDF_Core_Type_Name('ETSI.CAdES.detached', true);
+        $dictionary['Filter'] = new SetaPDF_Core_Type_Name('Adobe.PPKLite', true);
+    }
+
+    /**
+     * Updates the document instance.
+     *
+     * @param SetaPDF_Core_Document $document
+     * @see ETSI TS 102 778-3 V1.2.1 - 4.7 Extensions Dictionary
+     * @see ETSI EN 319 142-1 V1.1.0 - 5.6 Extension dictionary
+     */
+    public function updateDocument(SetaPDF_Core_Document $document)
+    {
+        $extensions = $document->getCatalog()->getExtensions();
+        $extensions->setExtension('ESIC', '1.7', 2);
+    }
+
+    /**
      * Implementation of the createSignautre() method.
      *
-     * @param SetaPDF_Core_Reader_FilePath|string $tmpPath
+     * @param SetaPDF_Core_Reader_FilePath $tmpPath
      * @return mixed
      * @throws SetaPDF_Signer_Exception
      */
-    public function createSignature($tmpPath)
+    public function createSignature(SetaPDF_Core_Reader_FilePath $tmpPath)
     {
         if (!file_exists($tmpPath) || !is_readable($tmpPath)) {
             throw new InvalidArgumentException('Signature template file cannot be read.');

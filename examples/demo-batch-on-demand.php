@@ -49,9 +49,6 @@ $clientOptions = array(
     'passphrase' => $passphrase
 );
 
-// let's prepare the temporary file writer
-SetaPDF_Core_Writer_TempFile::setTempDir(realpath('_tmp/'));
-
 // create a re-usable array of filenames (in/out)
 $files = array(
     array(

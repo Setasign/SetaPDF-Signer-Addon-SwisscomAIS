@@ -13,9 +13,9 @@ ini_set('display_errors', 1);
 // require the autoload class from Composer
 require_once('../vendor/autoload.php');
 
-if (file_exists('credentials.php')) {
+if (file_exists('credentials-ts.php')) {
     // The vars are defined in this file for privacy reason.
-    require('credentials.php');
+    require('credentials-ts.php');
 } else {
     // path to your certificate and private key
     $cert = realpath('mycertandkey.crt');
@@ -39,9 +39,6 @@ $clientOptions = array(
 
 // the signature field name
 $signatureFieldName = 'Signature';
-
-// let's prepare the temporary file writer
-SetaPDF_Core_Writer_TempFile::setTempDir(realpath('_tmp/'));
 
 // create a HTTP writer
 $writer = new SetaPDF_Core_Writer_Http('Swisscom-Ts-Ltv.pdf');
