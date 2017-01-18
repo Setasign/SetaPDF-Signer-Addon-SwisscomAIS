@@ -14,7 +14,7 @@ require_once('../vendor/autoload.php');
 
 // prepare on-demand data
 $signerMail = 'demo@setasign.com';
-$signerDn = 'cn=' . $signerMail . ',c=de';
+$signerDn = 'cn=' . $signerMail . ', ou=For test purposes only!, o=Setasign TEST, c=de';
 $signerLocation = 'Helmstedt';
 $signerReason = 'I agree to the terms and condidtions in this document';
 // optional step up
