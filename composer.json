@@ -13,7 +13,7 @@
     "repositories": [
         {
             "type": "composer",
-            "url": "http://www.setasign.com/downloads/"
+            "url": "https://www.setasign.com/downloads/"
         }
     ],
     "require": {
