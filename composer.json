@@ -17,7 +17,7 @@
         }
     ],
     "require": {
-        "setasign/setapdf-signer": "2.*"
+        "setasign/setapdf-signer": "^2.35"
     },
     "autoload": {
         "psr-0": {
