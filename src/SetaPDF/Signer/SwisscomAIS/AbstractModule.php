@@ -77,7 +77,7 @@ abstract class SetaPDF_Signer_SwisscomAIS_AbstractModule extends SetaPDF_Signer_
     {
         $this->_customerId = $customerId;
         $this->_clientOptions = $clientOptions;
-        $this->_wsdl = $wsdl === null ? dirname(__FILE__) . '/aisService.wsdl' : $wsdl;
+        $this->_wsdl = $wsdl === null ? __DIR__ . '/aisService.wsdl' : $wsdl;
     }
 
     /**
@@ -196,7 +196,7 @@ abstract class SetaPDF_Signer_SwisscomAIS_AbstractModule extends SetaPDF_Signer_
         }
 
         $dss = new SetaPDF_Signer_DocumentSecurityStore($document);
-        $dss->addValidationRelatedInfoByField($fieldName, $crls, $ocsps, $certificates);
+        $dss->addValidationRelatedInfoByFieldName($fieldName, $crls, $ocsps, $certificates);
     }
 
     /**
@@ -209,9 +209,9 @@ abstract class SetaPDF_Signer_SwisscomAIS_AbstractModule extends SetaPDF_Signer_
     {
         if ($data instanceof SetaPDF_Core_Reader_FilePath) {
             return hash_file($this->getDigest(), $data->getPath(), true);
-        } else {
-            return hash($this->getDigest(), $data, true);
         }
+
+        return hash($this->getDigest(), $data, true);
     }
 
     /**
@@ -247,7 +247,7 @@ abstract class SetaPDF_Signer_SwisscomAIS_AbstractModule extends SetaPDF_Signer_
         $maxLen = strlen($pattern) - 1;
         $id = '';
         for ($i = 1; $i <= 6; $i++) {
-            $id .= $pattern{mt_rand(0, $maxLen)};
+            $id .= $pattern[mt_rand(0, $maxLen)];
         }
 
         return $id;
