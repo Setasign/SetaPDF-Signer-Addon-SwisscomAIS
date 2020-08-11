@@ -24,7 +24,7 @@ class SetaPDF_Signer_SwisscomAIS_Batch extends SetaPDF_Signer_SwisscomAIS_Abstra
      *
      * @var int
      */
-    protected $_signatureConentLength = 32000;
+    protected $_signatureConentLength = 36000;
 
     /**
      * The signature field name
