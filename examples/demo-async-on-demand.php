@@ -149,7 +149,7 @@ try {
     echo '<hr>Restart signing process here: <a href="?">Restart</a>';
     // clean up temporary file
     unlink($tmpDocument->getWriter()->getPath());
-    unlink('test.tmp');
+    unset($_SESSION[__FILE__]);
     return;
 } catch (Throwable $e) {
     echo 'Error on signing. If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';
@@ -162,7 +162,7 @@ try {
     $signer->saveSignature($tmpDocument, $cms);
 // clean up temporary file
     unlink($tmpDocument->getWriter()->getPath());
-    unlink('test.tmp');
+    unset($_SESSION[__FILE__]);
 } catch (Throwable $e) {
     echo 'Error on saving the signature. If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';
     var_dump($e);
