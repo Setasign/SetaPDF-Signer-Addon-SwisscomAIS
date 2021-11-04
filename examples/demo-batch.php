@@ -1,6 +1,5 @@
 <?php
-/* This demo shows you how to do batch signing through a single webservice
- * call of the Swisscom All-in Signing Service.
+/* This demo shows you how to do batch signing through the Swisscom All-in Signing Service.
  *
  * More information about AIS are available here:
  * https://documents.swisscom.com/product/1000255-Digital_Signing_Service/Documents/Reference_Guide/Reference_Guide-All-in-Signing-Service-en.pdf
