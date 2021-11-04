@@ -48,7 +48,7 @@ Add following to your composer.json:
     "repositories": [
         {
             "type": "composer",
-            "url": "http://www.setasign.com/downloads/"
+            "url": "https://www.setasign.com/downloads/"
         }
     ]
 }
@@ -71,7 +71,7 @@ component. If you want to use it with an evaluation version please use following
     "repositories": [
         {
             "type": "composer",
-            "url": "http://www.setasign.com/downloads/"
+            "url": "https://www.setasign.com/downloads/"
         }
     ]
 }
@@ -98,7 +98,7 @@ Then simply require the `src/autoload.php` file or register this package in your
 ```php
 $loader = new \Example\Psr4AutoloaderClass;
 $loader->register();
-$loader->addNamespace('setasign\SetaPDF\Signer\Module\AzureKeyVault', 'path/to/src/');
+$loader->addNamespace('setasign\SetaPDF\Signer\Module\SwisscomAIS', 'path/to/src/');
 ```
 
 
