@@ -1,0 +1,24 @@
+<?php
+
+return [
+    // Set to a string to specify the path to a file containing a PEM formatted client side certificate.
+    // If a password is required, then set to an array containing the path to the PEM file in the first array
+    // element followed by the password required for the certificate in the second array element.
+    'cert' => realpath(__DIR__ . '/public-key.pem'),
+    // Specify the path to a file containing a private SSL key in PEM format.
+    // If a password is required, then set to an array containing the path to the SSL key in the first array element
+    // followed by the password required for the certificate in the second element.
+    'privateKey' => realpath(__DIR__ . '/private-key.pem'),
+    // your <customer name>:<key entity>
+    'customerId' => 'customer-name:key-entity',
+
+    'distinguishedName' => 'cn=TEST Setasign Test,givenname=For test purposes only!,surname=Setasign TEST, c=de, emailaddress=demo@setasign.com',
+
+    'stepUpAuthorisation' => [
+        'msisdn' => '491234567890',
+        'message' => 'Sign Laboratory-Report.pdf',
+        'language' => 'en',
+        // optional
+        // 'serialNumber' => ''
+    ]
+];
