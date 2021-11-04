@@ -74,7 +74,7 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
         ],
     ];
 
-    $batch->setSignatureContentLength(100000);
+    $batch->setSignatureContentLength(60000);
 
     // let's add PADES revoke information to the resulting signatures
     $batch->setAddRevokeInformation('PADES');

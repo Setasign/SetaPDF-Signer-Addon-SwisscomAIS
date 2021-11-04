@@ -47,7 +47,7 @@ $document = SetaPDF_Core_Document::loadByFilename('files/tektown/Laboratory-Repo
 // now let's create a signer instance
 $signer = new SetaPDF_Signer($document);
 $signer->setAllowSignatureContentLengthChange(false);
-$signer->setSignatureContentLength(40000);
+$signer->setSignatureContentLength(32000);
 
 // set some signature properties
 $signer->setLocation($_SERVER['SERVER_NAME']);

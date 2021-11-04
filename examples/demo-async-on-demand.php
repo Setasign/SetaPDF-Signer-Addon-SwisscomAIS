@@ -56,7 +56,7 @@ $signer = new SetaPDF_Signer($document);
 $swisscomModule = new AsyncModule($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
 if (!array_key_exists(__FILE__, $_SESSION)) {
     $signer->setAllowSignatureContentLengthChange(false);
-    $signer->setSignatureContentLength(100000);
+    $signer->setSignatureContentLength(60000);
 
     // set some signature properties
     $signer->setLocation($_SERVER['SERVER_NAME']);
@@ -157,10 +157,16 @@ try {
     return;
 }
 
+try {
 // save the signature to the temporary document
-$signer->saveSignature($tmpDocument, $cms);
+    $signer->saveSignature($tmpDocument, $cms);
 // clean up temporary file
-unlink($tmpDocument->getWriter()->getPath());
-unlink('test.tmp');
+    unlink($tmpDocument->getWriter()->getPath());
+    unlink('test.tmp');
+} catch (Throwable $e) {
+    echo 'Error on saving the signature. If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';
+    var_dump($e);
+    return;
+}
 
 echo '<br/><hr/>If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';

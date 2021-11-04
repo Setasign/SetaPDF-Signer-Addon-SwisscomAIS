@@ -1,7 +1,7 @@
 # Swisscom AIS signature module and batch functionality for the SetaPDF-Signer component
 
 This package offers an individual module for the [SetaPDF-Signer Component](https://www.setasign.com/signer) that allows
-you to use the [Swisscom All-in Signing Service](https://www.swisscom.ch/en/business/enterprise/offer/security/identity-access-security/signing-service.html) 
+you to use the [Swisscom All-in Signing Service](https://trustservices.swisscom.com/signing-service/) 
 for the signature process of PDF documents. A big advantage of this module is, that it only transfers the hash, that 
 should be signed, to Swisscom AIS webservice and not the complete PDF document. The returned signature will be placed in
 the PDF document by the SetaPDF-Signer Component.

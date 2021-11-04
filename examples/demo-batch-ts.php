@@ -67,6 +67,8 @@ $files = [
 $batch = new BatchTimestampModule($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
 // let's add PADES revoke information to the resulting signatures
 $batch->setAddRevokeInformation('PADES');
+$batch->setSignatureContentLength(32000);
+
 try {
     // timestamp the documents and add the revoke information to the DSS of the documents
     $batch->timestamp($files, true);
