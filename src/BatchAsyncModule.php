@@ -151,15 +151,15 @@ class BatchAsyncModule extends AbstractAsyncModule
     }
 
     /**
+     * @return bool False if the signature process is still pending.
      * @throws Exception
-     * @throws PendingException
      * @throws SignException
      * @throws \SetaPDF_Core_Exception
      * @throws \SetaPDF_Signer_Asn1_Exception
      * @throws \SetaPDF_Signer_Exception
      * @throws \SetaPDF_Signer_Exception_ContentLength
      */
-    public function processPendingSignature()
+    public function processPendingSignature(): bool
     {
         if ($this->pendingResponseId === null) {
             throw new \BadMethodCallException(
@@ -190,7 +190,7 @@ class BatchAsyncModule extends AbstractAsyncModule
 
         $result = $responseData['SignResponse']['Result']['ResultMajor'];
         if ($result === 'urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:resultmajor:Pending') {
-            throw new PendingException();
+            return false;
         }
 
         if ($result !== 'urn:oasis:names:tc:dss:1.0:resultmajor:Success') {
@@ -241,6 +241,7 @@ class BatchAsyncModule extends AbstractAsyncModule
             // clean up temporary file
             unlink($documentData['tmpDocument']->getWriter()->getPath());
         }
+        return true;
     }
 
     public function cleanupTemporaryFiles()

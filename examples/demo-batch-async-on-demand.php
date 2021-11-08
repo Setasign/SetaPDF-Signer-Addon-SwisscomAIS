@@ -11,7 +11,6 @@ use Http\Factory\Guzzle\RequestFactory;
 use Http\Factory\Guzzle\StreamFactory;
 use Mjelamanov\GuzzlePsr18\Client as Psr18Wrapper;
 use setasign\SetaPDF\Signer\Module\SwisscomAIS\BatchAsyncModule;
-use setasign\SetaPDF\Signer\Module\SwisscomAIS\PendingException;
 use setasign\SetaPDF\Signer\Module\SwisscomAIS\SignException;
 
 date_default_timezone_set('Europe/Berlin');
@@ -101,7 +100,7 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
         // The content of the website pointed by the consent URL can change over time and therefore the page
         // must be displayed as it is. The recommended methods for showing the content hosted under the consent
         // URL are:
-        // • To embed an iFrame in the application (see [IFR - https://github.com/SCS-CBU-CED-IAM/AIS/wiki/SAS-iFrame-Embedding-Guide] for guidelines)
+        // • To embed an iFrame in the application (see [IFR - https://github.com/SwisscomTrustServices/AIS/wiki/SAS-iFrame-Embedding-Guide] for guidelines)
         // • To send an SMS to the user with the consent URL, so the user can open it directly on his phone browser
 
         $url = json_encode($response['SignResponse']['OptionalOutputs']['sc.StepUpAuthorisationInfo']['sc.Result']['sc.ConsentURL']);
@@ -110,7 +109,7 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
         echo <<<HTML
 <script type="text/javascript">
 function openLink () {
-    console.info(window.open(${url}, '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes'));
+    window.open(${url}, '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes');
     window.setTimeout(function () {window.location = window.location.pathname;}, 5000);
 }
 </script>
@@ -129,12 +128,7 @@ $processData = $_SESSION[__FILE__]['processData'];
 $batch->setProcessData($processData);
 
 try {
-    $batch->processPendingSignature();
-} catch (PendingException $e) {
-    echo 'Still pending! The page should reload every 5 seconds.';
-    echo '<br/><hr/>If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';
-    echo '<script type="text/javascript">window.setTimeout(function () {window.location = window.location.pathname;}, 5000);</script>';
-    return;
+    $signResult = $batch->processPendingSignature();
 } catch (SignException $e) {
     $minorResult = $e->getResultMinor();
     if ($minorResult === 'http://ais.swisscom.ch/1.1/resultminor/subsystem/StepUp/timeout') {
@@ -152,6 +146,13 @@ try {
 } catch (Throwable $e) {
     echo 'Error on signing. If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';
     var_dump($e);
+    return;
+}
+
+if ($signResult === false) {
+    echo 'Still pending! The page should reload every 5 seconds.';
+    echo '<br/><hr/>If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';
+    echo '<script type="text/javascript">window.setTimeout(function () {window.location = window.location.pathname;}, 5000);</script>';
     return;
 }
 

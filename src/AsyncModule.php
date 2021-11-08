@@ -49,11 +49,11 @@ class AsyncModule extends AbstractAsyncModule
     }
 
     /**
-     * @return string
+     * @return false|string False if the signature process is still pending.
      * @throws Exception
      * @throws SignException
      */
-    public function processPendingSignature(): string
+    public function processPendingSignature()
     {
         if ($this->pendingResponseId === null) {
             throw new \BadMethodCallException(
@@ -84,7 +84,7 @@ class AsyncModule extends AbstractAsyncModule
 
         $result = $responseData['SignResponse']['Result']['ResultMajor'];
         if ($result === 'urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:resultmajor:Pending') {
-            throw new PendingException();
+            return false;
         }
 
         if ($result !== 'urn:oasis:names:tc:dss:1.0:resultmajor:Success') {
@@ -95,7 +95,10 @@ class AsyncModule extends AbstractAsyncModule
         $signatureResponse = $signatureObject['Base64Signature']['$'];
 
         $signatureValue = base64_decode($signatureResponse);
+        if ($signatureValue === false) {
+            throw new \RuntimeException('Invalid base64 encoded signature');
+        }
         $this->currentRequestId = null;
-        return (string) $signatureValue;
+        return $signatureValue;
     }
 }
