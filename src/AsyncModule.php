@@ -49,7 +49,7 @@ class AsyncModule extends AbstractAsyncModule
     }
 
     /**
-     * @return false|string False if the signature process is still pending.
+     * @return false|string False if the signature process is still pending. Otherwise, the signature will be returned.
      * @throws Exception
      * @throws SignException
      */
