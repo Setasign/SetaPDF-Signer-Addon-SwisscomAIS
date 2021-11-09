@@ -74,8 +74,6 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
 
     $batch->setSignatureContentLength(60000);
 
-    // let's add PADES revoke information to the resulting signatures
-    $batch->setAddRevokeInformation('PADES');
     // the signatures should include a timestamp, too
     $batch->setAddTimestamp(true);
     // set on-demand options
@@ -83,7 +81,7 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
     if (isset($settings['stepUpAuthorisation'])) {
         $batch->setStepUpAuthorisation(
             $settings['stepUpAuthorisation']['msisdn'],
-            $settings['stepUpAuthorisation']['message'],
+            'Please confirm to sign ' . count($files) . ' PDF documents.',
             $settings['stepUpAuthorisation']['language'],
             $settings['stepUpAuthorisation']['serialNumber'] ?? null
         );

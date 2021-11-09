@@ -62,8 +62,6 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
     $signer->setContactInfo('+01 2345 67890123');
     $signer->setReason('testing...');
 
-    // let's add PADES revoke information to the resulting signatures
-    $swisscomModule->setAddRevokeInformation('PADES');
     // additionally, the signature should include a qualified timestamp
     $swisscomModule->setAddTimestamp(true);
     // set on-demand options
@@ -71,7 +69,7 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
     if (isset($settings['stepUpAuthorisation'])) {
         $swisscomModule->setStepUpAuthorisation(
             $settings['stepUpAuthorisation']['msisdn'],
-            $settings['stepUpAuthorisation']['message'],
+            'Please confirm to sign Laboratory-Report.pdf',
             $settings['stepUpAuthorisation']['language'],
             $settings['stepUpAuthorisation']['serialNumber'] ?? null
         );
@@ -138,9 +136,10 @@ try {
     } elseif ($minorResult === 'http://ais.swisscom.ch/1.1/resultminor/subsystem/StepUp/cancel') {
         echo 'StepUp authentification was canceled';
     } else {
+        echo 'An error occurred: ' . htmlspecialchars($e->getMessage()) . '<br/>';
         var_dump($e->getResultMajor(), $e->getResultMinor());
     }
-    echo '<br/>Canceled signature process';
+
     echo '<hr>Restart signing process here: <a href="?">Restart</a>';
     // clean up temporary file
     unlink($tmpDocument->getWriter()->getPath());
