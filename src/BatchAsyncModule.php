@@ -6,8 +6,6 @@ namespace setasign\SetaPDF\Signer\Module\SwisscomAIS;
 
 class BatchAsyncModule extends AbstractAsyncModule
 {
-    use SignatureFieldTrait;
-
     /**
      * @var array
      */
@@ -19,7 +17,34 @@ class BatchAsyncModule extends AbstractAsyncModule
     protected $updateDss;
 
     /**
-     * @param array{pendingResponseId: string, pendingRequestId: string, documentsData: array{in: SetaPDF_Core_Reader_ReaderInterface, out: SetaPDF_Core_Writer_FileInterface, tmpDocument: SetaPDF_Signer_TmpDocument}} $processData
+     * The byte length of the reserved space for the signature content
+     *
+     * @var int
+     */
+    protected $signatureConentLength = 36000;
+
+    /**
+     * Set the signature content length that will be used to reserve space for the final signature.
+     *
+     * @param int $signatureContentLength The length of the signature content.
+     */
+    public function setSignatureContentLength(int $signatureContentLength)
+    {
+        $this->signatureConentLength = $signatureContentLength;
+    }
+
+    /**
+     * Get the signature content length that will be used to reserve space for the final signature.
+     *
+     * @return int
+     */
+    public function getSignatureContentLength(): int
+    {
+        return $this->signatureConentLength;
+    }
+
+    /**
+     * @param array{pendingResponseId: string, pendingRequestId: string, updateDss: bool, documentsData: array{in: SetaPDF_Core_Reader_ReaderInterface, out: SetaPDF_Core_Writer_FileInterface, tmpDocument: SetaPDF_Signer_TmpDocument}} $processData
      */
     public function setProcessData(array $processData): void
     {
@@ -48,7 +73,6 @@ class BatchAsyncModule extends AbstractAsyncModule
         parent::setProcessData($processData);
         $this->documentsData = $processData['documentsData'];
         $this->updateDss = $processData['updateDss'];
-        $this->fieldName = $processData['signatureFieldName'];
     }
 
     /**
@@ -59,7 +83,7 @@ class BatchAsyncModule extends AbstractAsyncModule
      * @param array{in:string|\SetaPDF_Core_Reader_ReaderInterface, out: string|\SetaPDF_Core_Writer_WriterInterface, tmp: string|\SetaPDF_Core_Writer_FileInterface}[] $documents
      * @param bool $updateDss Defines if the revoke information should be added to the DSS afterwards.
      * @param array $signatureProperties
-     * @return array{pendingResponseId: string, pendingRequestId: string, updateDss: bool, signatureFieldName: string, documentsData: array{in: SetaPDF_Core_Reader_ReaderInterface, out: SetaPDF_Core_Writer_WriterInterface, tmpDocument: SetaPDF_Signer_TmpDocument}}
+     * @return array{pendingResponseId: string, pendingRequestId: string, updateDss: bool, documentsData: array{in: SetaPDF_Core_Reader_ReaderInterface, out: SetaPDF_Core_Writer_WriterInterface, tmpDocument: SetaPDF_Signer_TmpDocument}}
      * @throws Exception
      * @throws \SetaPDF_Core_Exception
      * @throws \SetaPDF_Signer_Exception
@@ -96,7 +120,6 @@ class BatchAsyncModule extends AbstractAsyncModule
             $document = \SetaPDF_Core_Document::load($documentData['in'], $documentData['out']);
             $signer = new \SetaPDF_Signer($document);
             $signer->setSignatureContentLength($this->getSignatureContentLength());
-            $signer->setSignatureFieldName($this->getSignatureFieldName());
 
             foreach ($signatureProperties as $name => $value) {
                 $signer->setSignatureProperty($name, $value);
@@ -143,7 +166,6 @@ class BatchAsyncModule extends AbstractAsyncModule
                 'pendingResponseId' => $this->pendingResponseId,
                 'documentsData' => $data,
                 'updateDss' => $updateDss,
-                'signatureFieldName' => $this->fieldName
             ];
         }
 
@@ -222,7 +244,7 @@ class BatchAsyncModule extends AbstractAsyncModule
             $document = \SetaPDF_Core_Document::load($documentData['in'], $documentData['out']);
             $signer = new \SetaPDF_Signer($document);
 
-            if (!$this->updateDss || $this->addRevokeInformation === null) {
+            if (!$this->updateDss) {
                 $signer->saveSignature($documentData['tmpDocument'], $signatureValue);
             } else {
                 $tempWriter = new \SetaPDF_Core_Writer_TempFile();
@@ -232,7 +254,7 @@ class BatchAsyncModule extends AbstractAsyncModule
 
                 $document = \SetaPDF_Core_Document::loadByFilename($tempWriter->getPath(), $writer);
                 if ($this->addTimestamp) {
-                    $this->updateDss($document, $this->getSignatureFieldName());
+                    $this->updateDss($document, $signer->getSignatureField()->getQualifiedName());
                 }
 
                 $document->save()->finish();

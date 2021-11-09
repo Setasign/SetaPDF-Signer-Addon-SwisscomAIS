@@ -6,7 +6,32 @@ namespace setasign\SetaPDF\Signer\Module\SwisscomAIS;
 
 class BatchModule extends AbstractModule
 {
-    use SignatureFieldTrait;
+    /**
+     * The byte length of the reserved space for the signature content
+     *
+     * @var int
+     */
+    protected $signatureConentLength = 36000;
+
+    /**
+     * Set the signature content length that will be used to reserve space for the final signature.
+     *
+     * @param int $signatureContentLength The length of the signature content.
+     */
+    public function setSignatureContentLength(int $signatureContentLength)
+    {
+        $this->signatureConentLength = $signatureContentLength;
+    }
+
+    /**
+     * Get the signature content length that will be used to reserve space for the final signature.
+     *
+     * @return int
+     */
+    public function getSignatureContentLength(): int
+    {
+        return $this->signatureConentLength;
+    }
 
     /**
      * @param array{in:string|\SetaPDF_Core_Reader_ReaderInterface, out: string|\SetaPDF_Core_Writer_WriterInterface, tmp: string|\SetaPDF_Core_Writer_FileInterface}[] $documents
@@ -43,8 +68,6 @@ class BatchModule extends AbstractModule
 
             $document = \SetaPDF_Core_Document::load($documentData['in'], $documentData['out']);
             $signer = new \SetaPDF_Signer($document);
-            $signer->setSignatureContentLength($this->getSignatureContentLength());
-            $signer->setSignatureFieldName($this->getSignatureFieldName());
 
             foreach ($signatureProperties as $name => $value) {
                 $signer->setSignatureProperty($name, $value);
@@ -110,7 +133,7 @@ class BatchModule extends AbstractModule
              */
             $signer = $documentData['signer'];
 
-            if (!$updateDss || $this->addRevokeInformation === null) {
+            if (!$updateDss) {
                 $signer->saveSignature($documentData['tmpDocument'], $signatureValue);
             } else {
                 $tempWriter  = new \SetaPDF_Core_Writer_TempFile();
@@ -120,7 +143,7 @@ class BatchModule extends AbstractModule
 
                 $document = \SetaPDF_Core_Document::loadByFilename($tempWriter->getPath(), $writer);
                 if ($this->addTimestamp) {
-                    $this->updateDss($document, $this->getSignatureFieldName());
+                    $this->updateDss($document, $signer->getSignatureField()->getQualifiedName());
                 }
 
                 $document->save()->finish();

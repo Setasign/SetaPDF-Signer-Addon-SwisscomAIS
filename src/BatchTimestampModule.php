@@ -6,7 +6,32 @@ namespace setasign\SetaPDF\Signer\Module\SwisscomAIS;
 
 class BatchTimestampModule extends AbstractModule
 {
-    use SignatureFieldTrait;
+    /**
+     * The byte length of the reserved space for the signature content
+     *
+     * @var int
+     */
+    protected $signatureConentLength = 36000;
+
+    /**
+     * Set the signature content length that will be used to reserve space for the final signature.
+     *
+     * @param int $signatureContentLength The length of the signature content.
+     */
+    public function setSignatureContentLength(int $signatureContentLength)
+    {
+        $this->signatureConentLength = $signatureContentLength;
+    }
+
+    /**
+     * Get the signature content length that will be used to reserve space for the final signature.
+     *
+     * @return int
+     */
+    public function getSignatureContentLength(): int
+    {
+        return $this->signatureConentLength;
+    }
 
     public function updateSignatureDictionary(\SetaPDF_Core_Type_Dictionary $dictionary)
     {
@@ -66,7 +91,6 @@ class BatchTimestampModule extends AbstractModule
             $document = \SetaPDF_Core_Document::load($documentData['in'], $documentData['out']);
             $signer = new \SetaPDF_Signer($document);
             $signer->setSignatureContentLength($this->getSignatureContentLength());
-            $signer->setSignatureFieldName($this->getSignatureFieldName());
             $tmpDocument = $signer->preTimestamp($documentData['tmp'], $this);
 
             $data[$no] = [
@@ -126,7 +150,7 @@ class BatchTimestampModule extends AbstractModule
              */
             $signer = $documentData['signer'];
 
-            if (!$updateDss || $this->addRevokeInformation === null) {
+            if (!$updateDss) {
                 $signer->saveSignature($documentData['tmpDocument'], $timestamp);
             } else {
                 $tempWriter  = new \SetaPDF_Core_Writer_TempFile();
@@ -135,7 +159,7 @@ class BatchTimestampModule extends AbstractModule
                 $signer->saveSignature($documentData['tmpDocument'], $timestamp);
 
                 $document = \SetaPDF_Core_Document::loadByFilename($tempWriter->getPath(), $writer);
-                $this->updateDss($document, $this->getSignatureFieldName());
+                $this->updateDss($document, $signer->getSignatureField()->getQualifiedName());
                 $document->save()->finish();
             }
         }
