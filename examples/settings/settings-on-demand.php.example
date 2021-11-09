@@ -12,11 +12,12 @@ return [
     // your <customer name>:<key entity>
     'customerId' => 'customer-name:key-entity',
 
+    // If RA (Registration Authority) service is in use, you can use variable data as documented
+    // here: https://github.com/SwisscomTrustServices/AIS/wiki/Distinguished-Name:-Use-of-Evidence-Attributes
     'distinguishedName' => 'cn=TEST Setasign Test,givenname=For test purposes only!,surname=Setasign TEST, c=de, emailaddress=demo@setasign.com',
 
     'stepUpAuthorisation' => [
         'msisdn' => '491234567890',
-        'message' => 'Sign Laboratory-Report.pdf',
         'language' => 'en',
         // optional
         // 'serialNumber' => ''
