@@ -64,8 +64,6 @@ $files = [
 
 // initiate a batch instance
 $batch = new BatchTimestampModule($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
-// let's add PADES revoke information to the resulting signatures
-$batch->setAddRevokeInformation('PADES');
 $batch->setSignatureContentLength(32000);
 
 try {

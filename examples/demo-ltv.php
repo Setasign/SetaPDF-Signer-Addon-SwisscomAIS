@@ -1,7 +1,7 @@
 <?php
-/* This demo shows you how to create a simple signature including PAdES
- * verification data through the Swisscom All-in Signing Service. Additionally, the revoke information
- * will be added to the Document Security Store (DSS).
+/* This demo shows you how to create a simple PAdES signature including
+ * long term validation data through the Swisscom All-in Signing Service.
+ * Additionally, the revoke information will be added to the Document Security Store (DSS).
  *
  * More information about AIS are available here:
  * https://documents.swisscom.com/product/1000255-Digital_Signing_Service/Documents/Reference_Guide/Reference_Guide-All-in-Signing-Service-en.pdf
@@ -43,7 +43,7 @@ $httpClient = new Psr18Wrapper($httpClient);
 // create an HTTP writer
 $writer = new SetaPDF_Core_Writer_Http('Swisscom-ltv.pdf');
 // let's get the document
-$document = SetaPDF_Core_Document::loadByFilename('files/camtown/Laboratory-Report.pdf', $writer);
+$document = SetaPDF_Core_Document::loadByFilename('files/camtown/Laboratory-Report.pdf');
 
 // now let's create a signer instance
 $signer = new SetaPDF_Signer($document);
@@ -60,8 +60,6 @@ $signer->setSignatureFieldName($field->getQualifiedName());
 
 // create a Swisscom AIS module instance
 $module = new Module($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
-// let's add PADES revoke information
-$module->setAddRevokeInformation('PADES');
 // additionally, the signature should include a qualified timestamp
 $module->setAddTimestamp(true);
 

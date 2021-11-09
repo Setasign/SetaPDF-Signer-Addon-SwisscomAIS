@@ -62,8 +62,6 @@ $signer->setReason('testing...');
 
 // create a Swisscom AIS module instance
 $module = new TimestampModule($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
-// let's add PADES revoke information to the resulting signatures
-$module->setAddRevokeInformation('PADES');
 // pass the timestamp module to the signer instance
 $signer->setTimestampModule($module);
 

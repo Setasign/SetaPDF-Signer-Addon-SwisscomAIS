@@ -46,15 +46,6 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
     protected $addTimestamp = false;
 
     /**
-     * Flag identicating that the response should include revoke information.
-     *
-     * @var null|string
-     */
-    protected $addRevokeInformation = null;
-
-    protected $lastDocumentId = null;
-
-    /**
      * @var array
      */
     protected $lastResponseData = [];
@@ -174,28 +165,6 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
     }
 
     /**
-     * Define the level of revoke information.
-     *
-     * Allowed values are: PADES, CADES or BOTH
-     *
-     * @param null|string $level
-     */
-    public function setAddRevokeInformation(?string $level = 'BOTH')
-    {
-        if ($level === null) {
-            $this->addRevokeInformation = null;
-            return;
-        }
-
-        $level = strtoupper($level);
-        if (!\in_array($level, ['PADES', 'CADES', 'BOTH'])) {
-            throw new \InvalidArgumentException(\sprintf('Invalid revoke information level "%s"!', $level));
-        }
-
-        $this->addRevokeInformation = $level;
-    }
-
-    /**
      * Set the on-demand.
      *
      * @param null|string $distinguishedName
@@ -247,8 +216,9 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
                         'Name' => $this->identity
                     ],
                     'SignatureType' => 'urn:ietf:rfc:3369',
+                    'sc.SignatureStandard' => $this->signatureStandard,
+                    'sc.AddRevocationInformation' => ['@Type' => $this->signatureStandard]
                 ],
-                'sc:SignatureStandard' => $this->signatureStandard,
                 'InputDocuments' => [
                     'DocumentHash' => \array_map(function ($document, $no) use ($requestId) {
                         return [
@@ -269,10 +239,6 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
 
         if ($this->addTimestamp) {
             $optionalInputs['AddTimestamp'] = ['@Type' => 'urn:ietf:rfc:3161'];
-        }
-
-        if ($this->addRevokeInformation !== null) {
-            $optionalInputs['sc.AddRevocationInformation'] = ['@Type' => 'BOTH'];
         }
 
         if ($this->onDemandCertificate) {
@@ -305,11 +271,24 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
         $data = $this->lastResponseData['SignResponse']['OptionalOutputs']['sc.RevocationInformation'];
 
         if (isset($data['sc.CRLs']['sc.CRL'])) {
-            $crls[] = \base64_decode($data['sc.CRLs']['sc.CRL']);
+            $crlEntries = $data['sc.CRLs']['sc.CRL'];
+            if (!is_array($crlEntries)) {
+                $crlEntries = [$crlEntries];
+            }
+
+            foreach ($crlEntries as $crlEntry) {
+                $crls[] = \base64_decode($crlEntry);
+            }
         }
 
         if (isset($data['sc.OCSPs']['sc.OCSP'])) {
-            $ocsps[] = \base64_decode($data['sc.OCSPs']['sc.OCSP']);
+            $ocspEntries = $data['sc.OCSPs']['sc.OCSP'];
+            if (!is_array($ocspEntries)) {
+                $ocspEntries = [$ocspEntries];
+            }
+            foreach ($ocspEntries as $ocspEntry) {
+                $ocsps[] = \base64_decode($ocspEntry);
+            }
         }
 
         $dss = new \SetaPDF_Signer_DocumentSecurityStore($document);

@@ -59,8 +59,6 @@ $signer->setSignatureFieldName($field->getQualifiedName());
 
 // create a Swisscom AIS module instance
 $module = new Module($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
-// let's add PADES revoke information
-$module->setAddRevokeInformation('PADES');
 // additionally, the signature should include a qualified timestamp
 $module->setAddTimestamp(true);
 
