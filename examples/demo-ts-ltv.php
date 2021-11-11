@@ -50,8 +50,8 @@ $signer = new SetaPDF_Signer($document);
 $signer->setAllowSignatureContentLengthChange(false);
 $signer->setSignatureContentLength(17500);
 
-$field = $signer->getSignatureField();
-$signer->setSignatureFieldName($field->getQualifiedName());
+$fieldName = $signer->getSignatureField()->getQualifiedName();
+$signer->setSignatureFieldName($fieldName);
 
 // set some signature properties
 $signer->setLocation($_SERVER['SERVER_NAME']);
@@ -80,7 +80,7 @@ try {
 $document = SetaPDF_Core_Document::loadByFilename($tempWriter->getPath(), $writer);
 
 // update the DSS with the revoke information of the last response
-$module->updateDss($document, $field->getQualifiedName());
+$module->updateDss($document, $fieldName);
 
 // save and finish
 $document->save()->finish();
