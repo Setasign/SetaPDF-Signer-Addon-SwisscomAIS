@@ -44,7 +44,7 @@ class BatchAsyncModule extends AbstractAsyncModule
     }
 
     /**
-     * @param array{pendingResponseId: string, pendingRequestId: string, updateDss: bool, documentsData: array{in: SetaPDF_Core_Reader_ReaderInterface, out: SetaPDF_Core_Writer_FileInterface, tmpDocument: SetaPDF_Signer_TmpDocument}} $processData
+     * @param array{pendingResponseId: string, pendingRequestId: string, updateDss: bool, documentsData: array{serializedReader: string, out: SetaPDF_Core_Writer_FileInterface, tmpDocument: SetaPDF_Signer_TmpDocument, fieldName: string}} $processData
      */
     public function setProcessData(array $processData): void
     {
@@ -82,7 +82,7 @@ class BatchAsyncModule extends AbstractAsyncModule
      * @param array{in:string|\SetaPDF_Core_Reader_ReaderInterface, out: string|\SetaPDF_Core_Writer_WriterInterface, tmp: string|\SetaPDF_Core_Writer_FileInterface}[] $documents
      * @param bool $updateDss Defines wether the revocation information should be added via DSS or not.
      * @param array $signatureProperties
-     * @return array{pendingResponseId: string, pendingRequestId: string, updateDss: bool, documentsData: array{in: SetaPDF_Core_Reader_ReaderInterface, out: SetaPDF_Core_Writer_WriterInterface, tmpDocument: SetaPDF_Signer_TmpDocument}}
+     * @return array{pendingResponseId: string, pendingRequestId: string, updateDss: bool, documentsData: array{serializedReader: string, out: SetaPDF_Core_Writer_WriterInterface, tmpDocument: SetaPDF_Signer_TmpDocument, fieldName: string}}
      * @throws Exception
      * @throws \SetaPDF_Core_Exception
      * @throws \SetaPDF_Signer_Exception
