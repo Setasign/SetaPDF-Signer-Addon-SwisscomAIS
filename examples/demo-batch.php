@@ -1,8 +1,9 @@
 <?php
 /* This demo shows you how to do batch signing through the Swisscom All-in Signing Service.
  *
- * More information about AIS are available here:
- * https://documents.swisscom.com/product/1000255-Digital_Signing_Service/Documents/Reference_Guide/Reference_Guide-All-in-Signing-Service-en.pdf
+ * It uses the signature standard "PAdES-baseline" (default) and a timestamp signature. The revocation information of
+ * both are added to the Document Security Store (DSS) afterwards to have LTV enabled (PAdES Signature
+ * Level: B-LT).
  */
 
 use GuzzleHttp\Client as GuzzleClient;
@@ -41,12 +42,12 @@ $httpClient = new Psr18Wrapper($httpClient);
 // create a re-usable array of filenames (in/out)
 $files = [
     [
-        'in' => 'files/tektown/Laboratory-Report.pdf',
+        'in' => new SetaPDF_Core_Reader_File('files/tektown/Laboratory-Report.pdf'),
         'out' => 'output/tektown-signed.pdf',
         'tmp' => new SetaPDF_Core_Writer_TempFile()
     ],
     [
-        'in' => 'files/lenstown/Laboratory-Report.pdf',
+        'in' => new SetaPDF_Core_Reader_String(file_get_contents('files/lenstown/Laboratory-Report.pdf')),
         'out' => 'output/lenstown-signed.pdf',
         'tmp' => new SetaPDF_Core_Writer_TempFile()
     ],
@@ -64,7 +65,7 @@ $files = [
 
 // initiate a batch instance
 $batch = new BatchModule($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
-$batch->setSignatureContentLength(60000);
+$batch->setSignatureContentLength(30000);
 // the signatures should include a timestamp, too
 $batch->setAddTimestamp(true);
 

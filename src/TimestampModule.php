@@ -19,6 +19,7 @@ class TimestampModule extends AbstractModule implements \SetaPDF_Signer_Timestam
         $requestData = parent::buildSignRequestData($requestId, $documents);
 
         $optionalInputs = &$requestData['SignRequest']['OptionalInputs'];
+        unset($optionalInputs['sc.SignatureStandard']);
         $optionalInputs['SignatureType'] = 'urn:ietf:rfc:3161';
 
         $optionalInputs['AdditionalProfile'][] = 'urn:oasis:names:tc:dss:1.0:profiles:timestamping';

@@ -127,7 +127,7 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
      */
     public function setSignatureStandard(string $signatureStandard): void
     {
-        if (!\in_array($this->signatureStandard, ['PAdES-Baseline', 'PDF'], true)) {
+        if (!\in_array($signatureStandard, ['PAdES-Baseline', 'PDF'], true)) {
             throw new \InvalidArgumentException(\sprintf('Unsupported signature standard "%s"', $signatureStandard));
         }
 
@@ -151,7 +151,7 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
             return hash_file($this->getDigest(), $data->getPath(), true);
         }
 
-        return hash($this->getDigest(), $data, true);
+        return \hash($this->getDigest(), $data, true);
     }
 
     /**

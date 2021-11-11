@@ -1,9 +1,9 @@
 <?php
-/* This demo shows you how to create a simple signature with an on-demand certificate through the Swisscom All-in
- * Signing Service.
+/* This demo shows you how to create a simple signature with an on-demand certificate and Step-Up authentication
+ * through the Swisscom All-in Signing Service including a timestamp signature.
  *
- * More information about AIS are available here:
- * https://documents.swisscom.com/product/1000255-Digital_Signing_Service/Documents/Reference_Guide/Reference_Guide-All-in-Signing-Service-en.pdf
+ * It uses the signature standard "PAdES-baseline" and the revocation information of both signature and timestamp
+ * are added to the Document Security Store (DSS) afterwards to have LTV enabled (PAdES Signature Level: B-LT).
  */
 
 use GuzzleHttp\Client as GuzzleClient;
@@ -55,12 +55,15 @@ $signer = new SetaPDF_Signer($document);
 $swisscomModule = new AsyncModule($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
 if (!array_key_exists(__FILE__, $_SESSION)) {
     $signer->setAllowSignatureContentLengthChange(false);
-    $signer->setSignatureContentLength(60000);
+    $signer->setSignatureContentLength(30000);
 
     // set some signature properties
     $signer->setLocation($_SERVER['SERVER_NAME']);
     $signer->setContactInfo('+01 2345 67890123');
     $signer->setReason('testing...');
+
+    $fieldName = $signer->addSignatureField()->getQualifiedName();
+    $signer->setSignatureFieldName($fieldName);
 
     // additionally, the signature should include a qualified timestamp
     $swisscomModule->setAddTimestamp(true);
@@ -90,7 +93,8 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
     // You could use e.g. a database or a dedicated directory on your server.
     $_SESSION[__FILE__] = [
         'tmpDocument' => $tmpDocument,
-        'processData' => $processData
+        'processData' => $processData,
+        'fieldName' => $fieldName
     ];
 
     $response = $swisscomModule->getLastResponseData();
@@ -101,9 +105,9 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
         // • To embed an iFrame in the application (see [IFR - https://github.com/SwisscomTrustServices/AIS/wiki/SAS-iFrame-Embedding-Guide] for guidelines)
         // • To send an SMS to the user with the consent URL, so the user can open it directly on his phone browser
 
-
         $url = json_encode($response['SignResponse']['OptionalOutputs']['sc.StepUpAuthorisationInfo']['sc.Result']['sc.ConsentURL']);
-        echo 'Started async signing process... <a href="#" onclick="openLink()">Please give your consent.</a> (popups must be allowed)';
+        echo 'Started async signing process... <a href="#" onclick="openLink()">Please give your consent via mobile number ';
+        echo $settings['stepUpAuthorisation']['msisdn'] . '.</a> (popups must be allowed)';
         echo '<br/><hr/>If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';
         echo <<<HTML
 <script type="text/javascript">
@@ -117,7 +121,8 @@ HTML;
         return;
     }
 
-    echo 'Started async signing process... The page should reload every 5 seconds.';
+    echo 'Started async signing process (via mobile number ' . $settings['stepUpAuthorisation']['msisdn'] . '). Waiting for authorisation... ';
+    echo 'The page should reload every 5 seconds.';
     echo '<br/><hr/>If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';
     echo '<script type="text/javascript">window.setTimeout(function () {window.location = window.location.pathname;}, 5000);</script>';
     return;
@@ -125,6 +130,7 @@ HTML;
 
 $tmpDocument = $_SESSION[__FILE__]['tmpDocument'];
 $processData = $_SESSION[__FILE__]['processData'];
+$fieldName = $_SESSION[__FILE__]['fieldName'];
 $swisscomModule->setProcessData($processData);
 
 try {
@@ -152,16 +158,27 @@ try {
 }
 
 if ($signResult === false) {
-    echo 'Still pending! The page should reload every 5 seconds.';
+    echo 'Still pending! ';
+    echo 'Waiting for authorisation via mobile number ' . $settings['stepUpAuthorisation']['msisdn'] . '. ';
+    echo 'The page should reload every 5 seconds.';
     echo '<br/><hr/>If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';
     echo '<script type="text/javascript">window.setTimeout(function () {window.location = window.location.pathname;}, 5000);</script>';
     return;
 }
 
 try {
-// save the signature to the temporary document
+    $tmpWriter = new SetaPDF_Core_Writer_TempFile();
+    $document->setWriter($tmpWriter);
+
+    // save the signature to the temporary document
     $signer->saveSignature($tmpDocument, $signResult);
-// clean up temporary file
+
+    // add DSS
+    $document = SetaPDF_Core_Document::loadByFilename($tmpWriter->getPath(), $writer);
+    $swisscomModule->updateDss($document, $fieldName);
+    $document->save()->finish();
+
+    // clean up temporary file
     unlink($tmpDocument->getWriter()->getPath());
     unset($_SESSION[__FILE__]);
 } catch (Throwable $e) {
