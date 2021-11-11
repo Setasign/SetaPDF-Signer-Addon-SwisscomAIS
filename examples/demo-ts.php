@@ -1,9 +1,6 @@
 <?php
-/* This demo shows you how to add a document timestamp signature to a PDF document
+/* This demo shows you how to add a document level timestamp signature to a PDF document
  * through the Swisscom All-in Signing Service.
- *
- * More information about AIS are available here:
- * https://documents.swisscom.com/product/1000255-Digital_Signing_Service/Documents/Reference_Guide/Reference_Guide-All-in-Signing-Service-en.pdf
  */
 
 use GuzzleHttp\Client as GuzzleClient;
@@ -47,7 +44,7 @@ $document = SetaPDF_Core_Document::loadByFilename('files/tektown/Laboratory-Repo
 // now let's create a signer instance
 $signer = new SetaPDF_Signer($document);
 $signer->setAllowSignatureContentLengthChange(false);
-$signer->setSignatureContentLength(32000);
+$signer->setSignatureContentLength(17500);
 
 // set some signature properties
 $signer->setLocation($_SERVER['SERVER_NAME']);

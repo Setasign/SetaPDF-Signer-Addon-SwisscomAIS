@@ -1,10 +1,9 @@
 <?php
-/* This demo shows you how to create a simple PAdES signature including
- * long term validation data through the Swisscom All-in Signing Service.
- * Additionally, the revoke information will be added to the Document Security Store (DSS).
+/* This demo shows you how to create a signature through the Swisscom All-in Signing Service including a timestamp
+ * signature.
  *
- * More information about AIS are available here:
- * https://documents.swisscom.com/product/1000255-Digital_Signing_Service/Documents/Reference_Guide/Reference_Guide-All-in-Signing-Service-en.pdf
+ * It uses the signature standard "PAdES-baseline" and the revocation information of both signature and timestamp
+ * are added to the Document Security Store (DSS) afterwards to have LTV enabled (PAdES Signature Level: B-LT).
  */
 
 use GuzzleHttp\Client as GuzzleClient;
@@ -48,7 +47,7 @@ $document = SetaPDF_Core_Document::loadByFilename('files/camtown/Laboratory-Repo
 // now let's create a signer instance
 $signer = new SetaPDF_Signer($document);
 $signer->setAllowSignatureContentLengthChange(false);
-$signer->setSignatureContentLength(60000);
+$signer->setSignatureContentLength(30000);
 
 // set some signature properties
 $signer->setLocation($_SERVER['SERVER_NAME']);

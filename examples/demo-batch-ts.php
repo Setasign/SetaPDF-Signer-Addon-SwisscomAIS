@@ -1,8 +1,8 @@
 <?php
 /* This demo shows you how to do add timestamp signatures in a batch process through the Swisscom All-in Signing Service.
  *
- * More information about AIS are available here:
- * https://documents.swisscom.com/product/1000255-Digital_Signing_Service/Documents/Reference_Guide/Reference_Guide-All-in-Signing-Service-en.pdf
+ * The revocation information of the timestamp signatures are added to the Document Security Store (DSS) afterwards to
+ * have LTV enabled.
  */
 
 use GuzzleHttp\Client as GuzzleClient;
@@ -64,7 +64,7 @@ $files = [
 
 // initiate a batch instance
 $batch = new BatchTimestampModule($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
-$batch->setSignatureContentLength(32000);
+$batch->setSignatureContentLength(17500);
 
 try {
     // timestamp the documents and add the revoke information to the DSS of the documents

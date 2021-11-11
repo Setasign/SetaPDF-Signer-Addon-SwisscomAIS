@@ -9,6 +9,8 @@ the PDF document by the SetaPDF-Signer Component.
 Furthermore, this add-on comes with a batch class allowing to digital sign several documents with a single webservice
 call.
 
+The implementation is based on the [All-in Signing Service Reference Guide Version 2.10](https://documents.swisscom.com/product/1000255-Digital_Signing_Service/Documents/Reference_Guide/Reference_Guide-All-in-Signing-Service-en.pdf).
+
 ## Requirements
 To use this package you need credentials for the Swisscom AIS webservice.
 

@@ -1,8 +1,9 @@
 <?php
-/* This demo shows you how to do batch signing with on-demand certificate through the Swisscom All-in Signing Service.
+/* This demo shows you how to do batch signing with an on-demand certificate and Step-Up authentication
+ * through the Swisscom All-in Signing Service including timestamp signatures.
  *
- * More information about AIS are available here:
- * https://documents.swisscom.com/product/1000255-Digital_Signing_Service/Documents/Reference_Guide/Reference_Guide-All-in-Signing-Service-en.pdf
+ * It uses the signature standard "PAdES-baseline" and the revocation information of both signature and timestamp
+ * are added to the Document Security Store (DSS) afterwards to have LTV enabled (PAdES Signature Level: B-LT).
  */
 
 use GuzzleHttp\Client as GuzzleClient;
@@ -72,7 +73,6 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
         ],
     ];
 
-    $batch->setSignatureContentLength(60000);
 
     // the signatures should include a timestamp, too
     $batch->setAddTimestamp(true);
@@ -102,7 +102,8 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
         // • To send an SMS to the user with the consent URL, so the user can open it directly on his phone browser
 
         $url = json_encode($response['SignResponse']['OptionalOutputs']['sc.StepUpAuthorisationInfo']['sc.Result']['sc.ConsentURL']);
-        echo 'Started async signing process... <a href="#" onclick="openLink()">Please give your consent.</a> (popups must be allowed)';
+        echo 'Started async signing process... <a href="#" onclick="openLink()">Please give your consent via mobile number ';
+        echo $settings['stepUpAuthorisation']['msisdn'] . '.</a> (popups must be allowed)';
         echo '<br/><hr/>If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';
         echo <<<HTML
 <script type="text/javascript">
@@ -116,8 +117,8 @@ HTML;
         return;
     }
 
-    echo 'Started async signing process... The page should reload every 5 seconds.';
-    echo '<br/><hr/>If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';
+    echo 'Started async signing process (via mobile number ' . $settings['stepUpAuthorisation']['msisdn'] . '). Waiting for authorisation... ';
+    echo 'The page should reload every 5 seconds.';
     echo '<script type="text/javascript">window.setTimeout(function () {window.location = window.location.pathname;}, 5000);</script>';
     return;
 }
@@ -134,9 +135,10 @@ try {
     } elseif ($minorResult === 'http://ais.swisscom.ch/1.1/resultminor/subsystem/StepUp/cancel') {
         echo 'StepUp authentification was canceled';
     } else {
+        echo 'An error occurred: ' . htmlspecialchars($e->getMessage()) . '<br/>';
         var_dump($e->getResultMajor(), $e->getResultMinor());
     }
-    echo '<br/>Canceled signature process';
+
     $batch->cleanupTemporaryFiles();
     unset($_SESSION[__FILE__]);
     echo '<hr>Restart signing process here: <a href="?">Restart</a>';
@@ -148,7 +150,9 @@ try {
 }
 
 if ($signResult === false) {
-    echo 'Still pending! The page should reload every 5 seconds.';
+    echo 'Still pending! ';
+    echo 'Waiting for authorisation via mobile number ' . $settings['stepUpAuthorisation']['msisdn'] . '. ';
+    echo 'The page should reload every 5 seconds.';
     echo '<br/><hr/>If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';
     echo '<script type="text/javascript">window.setTimeout(function () {window.location = window.location.pathname;}, 5000);</script>';
     return;

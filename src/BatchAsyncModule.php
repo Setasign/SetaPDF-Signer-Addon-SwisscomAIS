@@ -44,24 +44,23 @@ class BatchAsyncModule extends AbstractAsyncModule
     }
 
     /**
-     * @param array{pendingResponseId: string, pendingRequestId: string, updateDss: bool, documentsData: array{in: SetaPDF_Core_Reader_ReaderInterface, out: SetaPDF_Core_Writer_FileInterface, tmpDocument: SetaPDF_Signer_TmpDocument}} $processData
+     * @param array{pendingResponseId: string, pendingRequestId: string, updateDss: bool, documentsData: array{serializedReader: string, out: SetaPDF_Core_Writer_FileInterface, tmpDocument: SetaPDF_Signer_TmpDocument, fieldName: string}} $processData
      */
     public function setProcessData(array $processData): void
     {
         if (
             !\array_key_exists('documentsData', $processData)
             || !\array_key_exists('updateDss', $processData)
-            || !\array_key_exists('signatureFieldName', $processData)
         ) {
             throw new \InvalidArgumentException('Invalid process data.');
         }
 
         foreach ($processData['documentsData'] as $documentData) {
             if (
-                !\array_key_exists('in', $documentData)
+                !\array_key_exists('serializedReader', $documentData)
                 || !\array_key_exists('out', $documentData)
                 || !\array_key_exists('tmpDocument', $documentData)
-                || !$documentData['in'] instanceof \SetaPDF_Core_Reader_ReaderInterface
+                || !\array_key_exists('fieldName', $documentData)
                 || !$documentData['out'] instanceof \SetaPDF_Core_Writer_WriterInterface
                 || !$documentData['tmpDocument'] instanceof \SetaPDF_Signer_TmpDocument
             ) {
@@ -81,15 +80,15 @@ class BatchAsyncModule extends AbstractAsyncModule
      * The document instances need to have writer instances setup properbly.
      *
      * @param array{in:string|\SetaPDF_Core_Reader_ReaderInterface, out: string|\SetaPDF_Core_Writer_WriterInterface, tmp: string|\SetaPDF_Core_Writer_FileInterface}[] $documents
-     * @param bool $updateDss Defines if the revoke information should be added to the DSS afterwards.
+     * @param bool $updateDss Defines wether the revocation information should be added via DSS or not.
      * @param array $signatureProperties
-     * @return array{pendingResponseId: string, pendingRequestId: string, updateDss: bool, documentsData: array{in: SetaPDF_Core_Reader_ReaderInterface, out: SetaPDF_Core_Writer_WriterInterface, tmpDocument: SetaPDF_Signer_TmpDocument}}
+     * @return array{pendingResponseId: string, pendingRequestId: string, updateDss: bool, documentsData: array{serializedReader: string, out: SetaPDF_Core_Writer_WriterInterface, tmpDocument: SetaPDF_Signer_TmpDocument, fieldName: string}}
      * @throws Exception
      * @throws \SetaPDF_Core_Exception
      * @throws \SetaPDF_Signer_Exception
      * @throws \SetaPDF_Signer_Exception_ContentLength
      */
-    public function initSignature(array $documents, bool $updateDss = false, array $signatureProperties = []): array
+    public function initSignature(array $documents, bool $updateDss = true, array $signatureProperties = []): array
     {
         if ($this->pendingResponseId !== null) {
             throw new \BadMethodCallException(
@@ -106,8 +105,12 @@ class BatchAsyncModule extends AbstractAsyncModule
         $no = 0;
         foreach ($documents as $documentData) {
             if (!$documentData['in'] instanceof \SetaPDF_Core_Reader_ReaderInterface) {
-                $documentData['in'] = new \SetaPDF_Core_Reader_File($documentData['in']);
+                $reader = new \SetaPDF_Core_Reader_File($documentData['in']);
+            } else {
+                $reader = $documentData['in'];
             }
+
+            $serializedReader = \serialize($reader);
 
             if (!$documentData['out'] instanceof \SetaPDF_Core_Writer_WriterInterface) {
                 $documentData['out'] = new \SetaPDF_Core_Writer_File($documentData['out']);
@@ -117,9 +120,12 @@ class BatchAsyncModule extends AbstractAsyncModule
                 $documentData['tmp'] = new \SetaPDF_Core_Writer_File($documentData['tmp']);
             }
 
-            $document = \SetaPDF_Core_Document::load($documentData['in'], $documentData['out']);
+            $document = \SetaPDF_Core_Document::load($reader);
             $signer = new \SetaPDF_Signer($document);
+            $signer->setAllowSignatureContentLengthChange(false);
             $signer->setSignatureContentLength($this->getSignatureContentLength());
+            $fieldName = $signer->addSignatureField()->getQualifiedName();
+            $signer->setSignatureFieldName($fieldName);
 
             foreach ($signatureProperties as $name => $value) {
                 $signer->setSignatureProperty($name, $value);
@@ -129,9 +135,10 @@ class BatchAsyncModule extends AbstractAsyncModule
             $tmpDocument = $signer->preSign($documentData['tmp'], $this);
 
             $data[$no] = [
-                'in' => $documentData['in'],
+                'serializedReader' => $serializedReader,
                 'out' => $documentData['out'],
                 'tmpDocument' => $tmpDocument,
+                'fieldName' => $fieldName
             ];
 
             $files[] = [
@@ -142,7 +149,7 @@ class BatchAsyncModule extends AbstractAsyncModule
             $no++;
         }
 
-        $requestId = uniqid();
+        $requestId = \uniqid();
         $requestData = $this->buildSignRequestData(
             $requestId,
             $files
@@ -241,22 +248,26 @@ class BatchAsyncModule extends AbstractAsyncModule
             $signatureResponse = $signatureObject['Base64Signature']['$'];
             $signatureValue = base64_decode($signatureResponse);
 
-            $document = \SetaPDF_Core_Document::load($documentData['in'], $documentData['out']);
+            $reader = \unserialize($documentData['serializedReader'], [
+                'allowed_classes' => [
+                    \SetaPDF_Core_Reader_String::class,
+                    \SetaPDF_Core_Reader_File::class
+                ]
+            ]);
+
+            $document = \SetaPDF_Core_Document::load($reader);
             $signer = new \SetaPDF_Signer($document);
 
             if (!$this->updateDss) {
+                $document->setWriter($documentData['out']);
                 $signer->saveSignature($documentData['tmpDocument'], $signatureValue);
             } else {
-                $tempWriter = new \SetaPDF_Core_Writer_TempFile();
-                $writer = $document->getWriter();
+                $tempWriter  = new \SetaPDF_Core_Writer_TempFile();
                 $document->setWriter($tempWriter);
                 $signer->saveSignature($documentData['tmpDocument'], $signatureValue);
 
-                $document = \SetaPDF_Core_Document::loadByFilename($tempWriter->getPath(), $writer);
-                if ($this->addTimestamp) {
-                    $this->updateDss($document, $signer->getSignatureField()->getQualifiedName());
-                }
-
+                $document = \SetaPDF_Core_Document::loadByFilename($tempWriter->getPath(), $documentData['out']);
+                $this->updateDss($document, $documentData['fieldName']);
                 $document->save()->finish();
             }
 

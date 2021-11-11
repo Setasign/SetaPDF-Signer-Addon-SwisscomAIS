@@ -1,9 +1,9 @@
 <?php
-/* This demo shows you how to create a simple signature including PAdES
- * verification data through the Swisscom All-in Signing Service.
+/* This demo shows you how to create a simple signature through the Swisscom All-in Signing Service including a
+ * timestamp signature.
  *
- * More information about AIS are available here:
- * https://documents.swisscom.com/product/1000255-Digital_Signing_Service/Documents/Reference_Guide/Reference_Guide-All-in-Signing-Service-en.pdf
+ * It uses the signature standard "PDF" which embed the revocation information in the CMS container.
+ * There are nor revocation information added for the timestamp signature.
  */
 
 use GuzzleHttp\Client as GuzzleClient;
@@ -47,7 +47,7 @@ $document = SetaPDF_Core_Document::loadByFilename('files/camtown/Laboratory-Repo
 // now let's create a signer instance
 $signer = new SetaPDF_Signer($document);
 $signer->setAllowSignatureContentLengthChange(false);
-$signer->setSignatureContentLength(50000);
+$signer->setSignatureContentLength(36000);
 
 // set some signature properties
 $signer->setLocation($_SERVER['SERVER_NAME']);
@@ -59,7 +59,7 @@ $signer->setSignatureFieldName($field->getQualifiedName());
 
 // create a Swisscom AIS module instance
 $module = new Module($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
-// additionally, the signature should include a qualified timestamp
+$module->setSignatureStandard('PDF');
 $module->setAddTimestamp(true);
 
 try {
