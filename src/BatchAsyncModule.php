@@ -48,27 +48,6 @@ class BatchAsyncModule extends AbstractAsyncModule
      */
     public function setProcessData(BatchProcessData $processData): void
     {
-//        if (
-//            !\array_key_exists('documentsData', $processData)
-//            || !\array_key_exists('updateDss', $processData)
-//        ) {
-//            throw new \InvalidArgumentException('Invalid process data.');
-//        }
-//
-//        foreach ($processData['documentsData'] as $documentData) {
-//            if (
-//                !\array_key_exists('serializedReader', $documentData)
-//                || !\array_key_exists('out', $documentData)
-//                || !\array_key_exists('tmpDocument', $documentData)
-//                || !\array_key_exists('fieldName', $documentData)
-//                || !$documentData['out'] instanceof \SetaPDF_Core_Writer_WriterInterface
-//                || !$documentData['tmpDocument'] instanceof \SetaPDF_Signer_TmpDocument
-//            ) {
-//                throw new \InvalidArgumentException('Invalid process data > documentsData.');
-//            }
-//        }
-
-
         $this->pendingResponseId = $processData->getPendingResponseId();
         $this->currentRequestId = $processData->getPendingRequestId();
         $this->documentsData = $processData->getDocumentsData();
