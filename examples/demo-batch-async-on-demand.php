@@ -161,8 +161,8 @@ if ($signResult === false) {
 unset($_SESSION[__FILE__]);
 
 $files = [];
-foreach ($processData['documentsData'] as $documentData) {
-    $writer = $documentData['out'];
+foreach ($processData->getDocumentsData() as $documentData) {
+    $writer = $documentData->getWriter();
     if ($writer instanceof SetaPDF_Core_Writer_File) {
         $files[] = $writer->getPath();
     }
