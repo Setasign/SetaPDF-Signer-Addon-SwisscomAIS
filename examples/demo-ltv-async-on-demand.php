@@ -12,6 +12,7 @@ use Http\Factory\Guzzle\RequestFactory;
 use Http\Factory\Guzzle\StreamFactory;
 use Mjelamanov\GuzzlePsr18\Client as Psr18Wrapper;
 use setasign\SetaPDF\Signer\Module\SwisscomAIS\AsyncModule;
+use setasign\SetaPDF\Signer\Module\SwisscomAIS\ProcessData;
 use setasign\SetaPDF\Signer\Module\SwisscomAIS\SignException;
 
 date_default_timezone_set('Europe/Berlin');
@@ -87,15 +88,11 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
         $swisscomModule
     );
 
-    $processData = $swisscomModule->initSignature($tmpDocument->getHashFile());
+    $processData = $swisscomModule->initSignature($tmpDocument, $fieldName);
 
     // For the purpose of this demo we just serialize the processData into the session.
     // You could use e.g. a database or a dedicated directory on your server.
-    $_SESSION[__FILE__] = [
-        'tmpDocument' => $tmpDocument,
-        'processData' => $processData,
-        'fieldName' => $fieldName
-    ];
+    $_SESSION[__FILE__]['processData'] = $processData;
 
     $response = $swisscomModule->getLastResponseData();
     if (isset($response['SignResponse']['OptionalOutputs']['sc.StepUpAuthorisationInfo']['sc.Result']['sc.ConsentURL'])) {
@@ -128,9 +125,8 @@ HTML;
     return;
 }
 
-$tmpDocument = $_SESSION[__FILE__]['tmpDocument'];
+/** @var ProcessData $processData */
 $processData = $_SESSION[__FILE__]['processData'];
-$fieldName = $_SESSION[__FILE__]['fieldName'];
 $swisscomModule->setProcessData($processData);
 
 try {
@@ -148,7 +144,7 @@ try {
 
     echo '<hr>Restart signing process here: <a href="?">Restart</a>';
     // clean up temporary file
-    unlink($tmpDocument->getWriter()->getPath());
+    unlink($processData->getTmpDocument()->getWriter()->getPath());
     unset($_SESSION[__FILE__]);
     return;
 } catch (Throwable $e) {
@@ -171,15 +167,15 @@ try {
     $document->setWriter($tmpWriter);
 
     // save the signature to the temporary document
-    $signer->saveSignature($tmpDocument, $signResult);
+    $signer->saveSignature($processData->getTmpDocument(), $signResult);
 
     // add DSS
     $document = SetaPDF_Core_Document::loadByFilename($tmpWriter->getPath(), $writer);
-    $swisscomModule->updateDss($document, $fieldName);
+    $swisscomModule->updateDss($document, $processData->getFieldName());
     $document->save()->finish();
 
     // clean up temporary file
-    unlink($tmpDocument->getWriter()->getPath());
+    unlink($processData->getTmpDocument()->getWriter()->getPath());
     unset($_SESSION[__FILE__]);
 } catch (Throwable $e) {
     echo 'Error on saving the signature. If you want to restart the signature process click here: <a href="?restart=1">Restart</a>';

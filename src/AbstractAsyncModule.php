@@ -22,22 +22,6 @@ abstract class AbstractAsyncModule extends AbstractModule
     protected $stepUpAuthorisationData = null;
 
     /**
-     * @param array{pendingResponseId: string, pendingRequestId: string} $processData
-     */
-    public function setProcessData(array $processData): void
-    {
-        if (
-            !\array_key_exists('pendingResponseId', $processData)
-            || !\array_key_exists('pendingRequestId', $processData)
-        ) {
-            throw new \InvalidArgumentException('Invalid process data.');
-        }
-
-        $this->pendingResponseId = $processData['pendingResponseId'];
-        $this->currentRequestId = $processData['pendingRequestId'];
-    }
-
-    /**
      * @param string $msisdn The Mobile phone number of the user.
      * @param string $message The text displayed to the user.
      * @param string $language The Language of the <Message> content.

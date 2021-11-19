@@ -7,7 +7,7 @@ namespace setasign\SetaPDF\Signer\Module\SwisscomAIS;
 class BatchAsyncModule extends AbstractAsyncModule
 {
     /**
-     * @var array
+     * @var DocumentData[]
      */
     protected $documentsData;
 
@@ -44,34 +44,14 @@ class BatchAsyncModule extends AbstractAsyncModule
     }
 
     /**
-     * @param array{pendingResponseId: string, pendingRequestId: string, updateDss: bool, documentsData: array{serializedReader: string, out: SetaPDF_Core_Writer_FileInterface, tmpDocument: SetaPDF_Signer_TmpDocument, fieldName: string}} $processData
+     * @param BatchProcessData $processData
      */
-    public function setProcessData(array $processData): void
+    public function setProcessData(BatchProcessData $processData): void
     {
-        if (
-            !\array_key_exists('documentsData', $processData)
-            || !\array_key_exists('updateDss', $processData)
-        ) {
-            throw new \InvalidArgumentException('Invalid process data.');
-        }
-
-        foreach ($processData['documentsData'] as $documentData) {
-            if (
-                !\array_key_exists('serializedReader', $documentData)
-                || !\array_key_exists('out', $documentData)
-                || !\array_key_exists('tmpDocument', $documentData)
-                || !\array_key_exists('fieldName', $documentData)
-                || !$documentData['out'] instanceof \SetaPDF_Core_Writer_WriterInterface
-                || !$documentData['tmpDocument'] instanceof \SetaPDF_Signer_TmpDocument
-            ) {
-                throw new \InvalidArgumentException('Invalid process data > documentsData.');
-            }
-        }
-
-
-        parent::setProcessData($processData);
-        $this->documentsData = $processData['documentsData'];
-        $this->updateDss = $processData['updateDss'];
+        $this->pendingResponseId = $processData->getPendingResponseId();
+        $this->currentRequestId = $processData->getPendingRequestId();
+        $this->documentsData = $processData->getDocumentsData();
+        $this->updateDss = $processData->getUpdateDss();
     }
 
     /**
@@ -82,13 +62,13 @@ class BatchAsyncModule extends AbstractAsyncModule
      * @param array{in:string|\SetaPDF_Core_Reader_ReaderInterface, out: string|\SetaPDF_Core_Writer_WriterInterface, tmp: string|\SetaPDF_Core_Writer_FileInterface}[] $documents
      * @param bool $updateDss Defines wether the revocation information should be added via DSS or not.
      * @param array $signatureProperties
-     * @return array{pendingResponseId: string, pendingRequestId: string, updateDss: bool, documentsData: array{serializedReader: string, out: SetaPDF_Core_Writer_WriterInterface, tmpDocument: SetaPDF_Signer_TmpDocument, fieldName: string}}
+     * @return BatchProcessData
      * @throws Exception
      * @throws \SetaPDF_Core_Exception
      * @throws \SetaPDF_Signer_Exception
      * @throws \SetaPDF_Signer_Exception_ContentLength
      */
-    public function initSignature(array $documents, bool $updateDss = true, array $signatureProperties = []): array
+    public function initSignature(array $documents, bool $updateDss = true, array $signatureProperties = []): BatchProcessData
     {
         if ($this->pendingResponseId !== null) {
             throw new \BadMethodCallException(
@@ -134,12 +114,7 @@ class BatchAsyncModule extends AbstractAsyncModule
             // prepare the PDF
             $tmpDocument = $signer->preSign($documentData['tmp'], $this);
 
-            $data[$no] = [
-                'serializedReader' => $serializedReader,
-                'out' => $documentData['out'],
-                'tmpDocument' => $tmpDocument,
-                'fieldName' => $fieldName
-            ];
+            $data[$no] = new DocumentData($serializedReader, $documentData['out'], $tmpDocument, $fieldName);
 
             $files[] = [
                 'algorithm' => $digestMethod,
@@ -168,12 +143,7 @@ class BatchAsyncModule extends AbstractAsyncModule
         $result = $responseData['SignResponse']['Result']['ResultMajor'];
         if ($result === 'urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:resultmajor:Pending') {
             $this->pendingResponseId = $responseData['SignResponse']['OptionalOutputs']['async.ResponseID'];
-            return [
-                'pendingRequestId' => $requestId,
-                'pendingResponseId' => $this->pendingResponseId,
-                'documentsData' => $data,
-                'updateDss' => $updateDss,
-            ];
+            return new BatchProcessData($requestId, $this->pendingResponseId, $updateDss, ...$data);
         }
 
         throw new SignException($requestData, $responseData);
@@ -209,6 +179,12 @@ class BatchAsyncModule extends AbstractAsyncModule
         ];
 
         $responseData = $this->callUrl('https://ais.swisscom.com/AIS-Server/rs/v1.0/pending', $requestData);
+
+        if (!isset($responseData['SignResponse']['@RequestID'])) {
+            // TODO: More details! If e.g. the passed ResponseId is unknown $responseData['Response'] is returned
+            throw new Exception('Invalid response!');
+        }
+
         if ($responseData['SignResponse']['@RequestID'] !== $this->currentRequestId) {
             throw new Exception(\sprintf(
                 'Invalid request id from response! Expected "%s" but got "%s"',
@@ -226,7 +202,7 @@ class BatchAsyncModule extends AbstractAsyncModule
             throw new SignException($requestData, $responseData);
         }
 
-        if (count($this->documentsData) > 1) {
+        if (\count($this->documentsData) > 1) {
             $signatureObjects = $responseData['SignResponse']['SignatureObject']['Other']['sc.SignatureObjects']['sc.ExtendedSignatureObject'];
             $multipleSignatures = true;
         } else {
@@ -246,33 +222,26 @@ class BatchAsyncModule extends AbstractAsyncModule
             $documentData = $this->documentsData[$no];
 
             $signatureResponse = $signatureObject['Base64Signature']['$'];
-            $signatureValue = base64_decode($signatureResponse);
+            $signatureValue = \base64_decode($signatureResponse);
 
-            $reader = \unserialize($documentData['serializedReader'], [
-                'allowed_classes' => [
-                    \SetaPDF_Core_Reader_String::class,
-                    \SetaPDF_Core_Reader_File::class
-                ]
-            ]);
-
-            $document = \SetaPDF_Core_Document::load($reader);
+            $document = \SetaPDF_Core_Document::load($documentData->getReader());
             $signer = new \SetaPDF_Signer($document);
 
             if (!$this->updateDss) {
-                $document->setWriter($documentData['out']);
-                $signer->saveSignature($documentData['tmpDocument'], $signatureValue);
+                $document->setWriter($documentData->getWriter());
+                $signer->saveSignature($documentData->getTmpDocument(), $signatureValue);
             } else {
                 $tempWriter  = new \SetaPDF_Core_Writer_TempFile();
                 $document->setWriter($tempWriter);
-                $signer->saveSignature($documentData['tmpDocument'], $signatureValue);
+                $signer->saveSignature($documentData->getTmpDocument(), $signatureValue);
 
-                $document = \SetaPDF_Core_Document::loadByFilename($tempWriter->getPath(), $documentData['out']);
-                $this->updateDss($document, $documentData['fieldName']);
+                $document = \SetaPDF_Core_Document::loadByFilename($tempWriter->getPath(), $documentData->getWriter());
+                $this->updateDss($document, $documentData->getFieldName());
                 $document->save()->finish();
             }
 
             // clean up temporary file
-            unlink($documentData['tmpDocument']->getWriter()->getPath());
+            \unlink($documentData->getTmpDocument()->getWriter()->getPath());
         }
         return true;
     }
@@ -286,7 +255,7 @@ class BatchAsyncModule extends AbstractAsyncModule
         }
 
         foreach ($this->documentsData as $documentData) {
-            unlink($documentData['tmpDocument']->getWriter()->getPath());
+            @\unlink($documentData->getTmpDocument()->getWriter()->getPath());
         }
     }
 }

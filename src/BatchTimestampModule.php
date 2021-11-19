@@ -83,6 +83,8 @@ class BatchTimestampModule extends AbstractModule
                 $reader = $documentData['in'];
             }
 
+            $serializedReader = \serialize($reader);
+
             if (!$documentData['out'] instanceof \SetaPDF_Core_Writer_WriterInterface) {
                 $documentData['out'] = new \SetaPDF_Core_Writer_File($documentData['out']);
             }
@@ -94,13 +96,11 @@ class BatchTimestampModule extends AbstractModule
             $document = \SetaPDF_Core_Document::load($reader);
             $signer = new \SetaPDF_Signer($document);
             $signer->setSignatureContentLength($this->getSignatureContentLength());
+            $fieldName = $signer->addSignatureField()->getQualifiedName();
+            $signer->setSignatureFieldName($fieldName);
             $tmpDocument = $signer->preTimestamp($documentData['tmp'], $this);
 
-            $data[$no] = [
-                'serializedReader' => \serialize($reader),
-                'out' => $documentData['out'],
-                'tmpDocument' => $tmpDocument,
-            ];
+            $data[$no] = new DocumentData($serializedReader, $documentData['out'], $tmpDocument, $fieldName);
 
             $files[] = [
                 'algorithm' => $digestMethod,
@@ -148,26 +148,21 @@ class BatchTimestampModule extends AbstractModule
 
             $timestamp = \base64_decode($timestampObject['Timestamp']['RFC3161TimeStampToken']);
 
-            $reader = \unserialize($documentData['serializedReader'], [
-                'allowed_classes' => [
-                    \SetaPDF_Core_Reader_String::class,
-                    \SetaPDF_Core_Reader_File::class
-                ]
-            ]);
+            $reader = $documentData->getReader();
 
             $document = \SetaPDF_Core_Document::load($reader);
             $signer = new \SetaPDF_Signer($document);
 
             if (!$updateDss) {
-                $document->setWriter($documentData['out']);
-                $signer->saveSignature($documentData['tmpDocument'], $timestamp);
+                $document->setWriter($documentData->getWriter());
+                $signer->saveSignature($documentData->getTmpDocument(), $timestamp);
             } else {
                 $tempWriter  = new \SetaPDF_Core_Writer_TempFile();
                 $document->setWriter($tempWriter);
-                $signer->saveSignature($documentData['tmpDocument'], $timestamp);
+                $signer->saveSignature($documentData->getTmpDocument(), $timestamp);
 
-                $document = \SetaPDF_Core_Document::loadByFilename($tempWriter->getPath(), $documentData['out']);
-                $this->updateDss($document, $signer->getSignatureField()->getQualifiedName());
+                $document = \SetaPDF_Core_Document::loadByFilename($tempWriter->getPath(), $documentData->getWriter());
+                $this->updateDss($document, $documentData->getFieldName());
                 $document->save()->finish();
             }
         }

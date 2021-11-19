@@ -7,13 +7,24 @@ namespace setasign\SetaPDF\Signer\Module\SwisscomAIS;
 class AsyncModule extends AbstractAsyncModule
 {
     /**
-     * @param \SetaPDF_Core_Reader_FilePath $tmpPath
-     * @return array{pendingResponseId: string, pendingRequestId: string}
+     * @param AbstractProcessData $processData
+     */
+    public function setProcessData(AbstractProcessData $processData): void
+    {
+        $this->pendingResponseId = $processData->getPendingResponseId();
+        $this->currentRequestId = $processData->getPendingRequestId();
+    }
+
+    /**
+     * @param \SetaPDF_Signer_TmpDocument $tmpDocument
+     * @param string $fieldName
+     * @return ProcessData
      * @throws Exception
      * @throws SignException
      */
-    public function initSignature(\SetaPDF_Core_Reader_FilePath $tmpPath): array
+    public function initSignature(\SetaPDF_Signer_TmpDocument $tmpDocument, string $fieldName): ProcessData
     {
+        $tmpPath = $tmpDocument->getHashFile();
         if ($this->pendingResponseId !== null) {
             throw new \BadMethodCallException(
                 'Cannot use AsyncModule::initSignature() after setting process data.
@@ -39,10 +50,7 @@ class AsyncModule extends AbstractAsyncModule
         $result = $responseData['SignResponse']['Result']['ResultMajor'];
         if ($result === 'urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:resultmajor:Pending') {
             $this->pendingResponseId = $responseData['SignResponse']['OptionalOutputs']['async.ResponseID'];
-            return [
-                'pendingRequestId' => $requestId,
-                'pendingResponseId' => $this->pendingResponseId
-            ];
+            return new ProcessData($requestId, $this->pendingResponseId, $tmpDocument, $fieldName);
         }
 
         throw new SignException($requestData, $responseData);
@@ -74,6 +82,12 @@ class AsyncModule extends AbstractAsyncModule
         ];
 
         $responseData = $this->callUrl('https://ais.swisscom.com/AIS-Server/rs/v1.0/pending', $requestData);
+
+        if (!isset($responseData['SignResponse']['@RequestID'])) {
+            // TODO: More details! If e.g. the passed ResponseId is unknown $responseData['Response'] is returned
+            throw new Exception('Invalid response!');
+        }
+
         if ($responseData['SignResponse']['@RequestID'] !== $this->currentRequestId) {
             throw new Exception(\sprintf(
                 'Invalid request id from response! Expected "%s" but got "%s"',
