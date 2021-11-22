@@ -148,7 +148,7 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
     protected function generateHash($data): string
     {
         if ($data instanceof \SetaPDF_Core_Reader_FilePath) {
-            return hash_file($this->getDigest(), $data->getPath(), true);
+            return \hash_file($this->getDigest(), $data->getPath(), true);
         }
 
         return \hash($this->getDigest(), $data, true);
@@ -176,6 +176,28 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
     }
 
     /**
+     * json_encode wrapper to handle invalid json. Can be removed with php7.3 and JSON_THROW_ON_ERROR
+     *
+     * @param $data
+     * @param int $encodingOptions
+     * @param int $depth
+     * @return false|string
+     */
+    protected function json_encode($data, int $encodingOptions = 0, int $depth = 512)
+    {
+        // Clear json_last_error()
+        \json_encode(null);
+
+        $json = @\json_encode($data, $encodingOptions, $depth);
+
+        if (JSON_ERROR_NONE !== \json_last_error()) {
+            throw new \InvalidArgumentException('Unable to encode data to JSON: ' . \json_last_error_msg());
+        }
+
+        return $json;
+    }
+
+    /**
      * json_decode wrapper to handle invalid json. Can be removed with php7.3 and JSON_THROW_ON_ERROR
      *
      * @param string $json The json string being decoded. This function only works with UTF-8 encoded strings.
@@ -192,10 +214,7 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
         $data = @\json_decode($json, $assoc, $depth, $options);
 
         if (\json_last_error() !== JSON_ERROR_NONE) {
-            throw new \InvalidArgumentException(\sprintf(
-                'Unable to decode JSON: %s',
-                \json_last_error_msg()
-            ));
+            throw new \InvalidArgumentException(\sprintf('Unable to decode JSON: %s', \json_last_error_msg()));
         }
         return $data;
     }
@@ -272,7 +291,7 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
 
         if (isset($data['sc.CRLs']['sc.CRL'])) {
             $crlEntries = $data['sc.CRLs']['sc.CRL'];
-            if (!is_array($crlEntries)) {
+            if (!\is_array($crlEntries)) {
                 $crlEntries = [$crlEntries];
             }
 
@@ -283,7 +302,7 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
 
         if (isset($data['sc.OCSPs']['sc.OCSP'])) {
             $ocspEntries = $data['sc.OCSPs']['sc.OCSP'];
-            if (!is_array($ocspEntries)) {
+            if (!\is_array($ocspEntries)) {
                 $ocspEntries = [$ocspEntries];
             }
             foreach ($ocspEntries as $ocspEntry) {
@@ -345,7 +364,7 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
                 $this->requestFactory->createRequest('POST', $url)
                 ->withHeader('Content-Type', 'application/json')
                 ->withHeader('Accept', 'application/json')
-                ->withBody($this->streamFactory->createStream(\json_encode($requestData)))
+                ->withBody($this->streamFactory->createStream($this->json_encode($requestData)))
             );
         } catch (ClientExceptionInterface $e) {
             throw new Exception('Connection error!', 0, $e);

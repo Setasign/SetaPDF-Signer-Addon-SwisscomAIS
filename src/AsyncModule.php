@@ -32,7 +32,7 @@ class AsyncModule extends AbstractAsyncModule
             );
         }
 
-        $digest = base64_encode($this->generateHash($tmpPath));
+        $digest = \base64_encode($this->generateHash($tmpPath));
         $requestId = \uniqid();
         $requestData = $this->buildSignRequestData(
             $requestId,
@@ -108,7 +108,7 @@ class AsyncModule extends AbstractAsyncModule
         $signatureObject = $responseData['SignResponse']['SignatureObject'];
         $signatureResponse = $signatureObject['Base64Signature']['$'];
 
-        $signatureValue = base64_decode($signatureResponse);
+        $signatureValue = \base64_decode($signatureResponse);
         if ($signatureValue === false) {
             throw new \RuntimeException('Invalid base64 encoded signature');
         }

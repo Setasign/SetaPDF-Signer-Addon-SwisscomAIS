@@ -130,7 +130,7 @@ class BatchModule extends AbstractModule
             $documentData = $data[$no];
 
             $signatureResponse = $signatureObject['Base64Signature']['$'];
-            $signatureValue = base64_decode($signatureResponse);
+            $signatureValue = \base64_decode($signatureResponse);
 
             $reader = $documentData->getReader();
 

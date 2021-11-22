@@ -18,8 +18,7 @@ class ProcessData extends AbstractProcessData
 
     public function __construct(
         $pendingRequestId, $pendingResponseId, \SetaPDF_Signer_TmpDocument $tmpDocument, string $fieldName
-    )
-    {
+    ) {
         parent::__construct($pendingRequestId, $pendingResponseId);
         $this->tmpDocument = $tmpDocument;
         $this->fieldName = $fieldName;

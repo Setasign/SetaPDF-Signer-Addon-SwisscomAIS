@@ -127,7 +127,7 @@ class BatchTimestampModule extends AbstractModule
             throw new SignException($requestData, $responseData);
         }
 
-        if (count($data) > 1) {
+        if (\count($data) > 1) {
             $timestampObjects = $responseData['SignResponse']['SignatureObject']['Other']['sc.SignatureObjects']['sc.ExtendedSignatureObject'];
             $multipleTimestamps = true;
         } else {

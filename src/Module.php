@@ -14,7 +14,7 @@ class Module extends AbstractModule implements \SetaPDF_Signer_Signature_Module_
      */
     public function createSignature(\SetaPDF_Core_Reader_FilePath $tmpPath): string
     {
-        $digest = base64_encode($this->generateHash($tmpPath));
+        $digest = \base64_encode($this->generateHash($tmpPath));
         $requestId = \uniqid();
         $requestData = $this->buildSignRequestData(
             $requestId,
@@ -38,7 +38,7 @@ class Module extends AbstractModule implements \SetaPDF_Signer_Signature_Module_
         $signatureObject = $responseData['SignResponse']['SignatureObject'];
         $signatureResponse = $signatureObject['Base64Signature']['$'];
 
-        $signatureValue = base64_decode($signatureResponse);
+        $signatureValue = \base64_decode($signatureResponse);
         return (string) $signatureValue;
     }
 }
