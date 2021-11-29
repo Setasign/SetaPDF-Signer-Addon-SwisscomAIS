@@ -26,6 +26,11 @@ class DocumentData
      */
     protected $fieldName;
 
+    /**
+     * @var array
+     */
+    protected $metadata = [];
+
     public function __construct(
         string $serializedReader,
         \SetaPDF_Core_Writer_WriterInterface $writer,
@@ -62,5 +67,15 @@ class DocumentData
     public function getFieldName(): string
     {
         return $this->fieldName;
+    }
+
+    public function setMetadata(array $metadata): void
+    {
+        $this->metadata = $metadata;
+    }
+
+    public function getMetadata(): array
+    {
+        return $this->metadata;
     }
 }

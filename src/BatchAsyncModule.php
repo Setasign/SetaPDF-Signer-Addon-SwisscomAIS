@@ -115,6 +115,9 @@ class BatchAsyncModule extends AbstractAsyncModule
             $tmpDocument = $signer->preSign($documentData['tmp'], $this);
 
             $data[$no] = new DocumentData($serializedReader, $documentData['out'], $tmpDocument, $fieldName);
+            if (isset($documentData['metadata'])) {
+                $data[$no]->setMetadata($documentData['metadata']);
+            }
 
             $files[] = [
                 'algorithm' => $digestMethod,
