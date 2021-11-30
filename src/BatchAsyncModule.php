@@ -55,11 +55,26 @@ class BatchAsyncModule extends AbstractAsyncModule
     }
 
     /**
-     * Signs a collection of document instances.
+     * Inititates an asynchronous signature batch process.
      *
-     * The document instances need to have writer instances setup properbly.
+     * The documents have to be passed as an array with the following structure:
      *
-     * @param array{in:string|\SetaPDF_Core_Reader_ReaderInterface, out: string|\SetaPDF_Core_Writer_WriterInterface, tmp: string|\SetaPDF_Core_Writer_FileInterface}[] $documents
+     * <code>
+     * $documents = [
+     *     [
+     *         'in' => 'local/path/non-signed.pdf', // or an instance of \SetaPDF_Core_Reader_String|\SetaPDF_Core_Reader_File
+     *         'out' => 'local/path/to/resulting.pdf', // or an instance implementing \SetaPDF_Core_Writer_WriterInterface
+     *         'tmp' => 'local/path/to/a/temporary.file', // or an instance of \SetaPDF_Core_Writer_FileInterface
+     *         'metadata' => [ // you can pass any foreign data related to your own process which can be accessed later
+     *             'custom' => 'data',
+     *             'document-id' => 12345
+     *         ]
+     *     ],
+     *     // ...
+     * ];
+     * </code>
+     *
+     * @param array{in:string|\SetaPDF_Core_Reader_String|\SetaPDF_Core_Reader_File, out: string|\SetaPDF_Core_Writer_WriterInterface, tmp: string|\SetaPDF_Core_Writer_FileInterface, metadata: array}[] $documents
      * @param bool $updateDss Defines wether the revocation information should be added via DSS or not.
      * @param array $signatureProperties
      * @return BatchProcessData

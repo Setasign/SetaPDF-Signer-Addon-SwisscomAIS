@@ -69,6 +69,11 @@ class DocumentData
         return $this->fieldName;
     }
 
+    /**
+     * This method allows you to inject foreign data into the document data object.
+     *
+     * @param array $metadata
+     */
     public function setMetadata(array $metadata): void
     {
         $this->metadata = $metadata;

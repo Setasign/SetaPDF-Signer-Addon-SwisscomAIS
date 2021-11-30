@@ -37,6 +37,11 @@ abstract class AbstractProcessData
         return $this->pendingRequestId;
     }
 
+    /**
+     * This method allows you to inject foreign data into the process data object.
+     *
+     * @param array $metadata
+     */
     public function setMetadata(array $metadata): void
     {
         $this->metadata = $metadata;
