@@ -12,6 +12,7 @@ use Http\Factory\Guzzle\RequestFactory;
 use Http\Factory\Guzzle\StreamFactory;
 use Mjelamanov\GuzzlePsr18\Client as Psr18Wrapper;
 use setasign\SetaPDF\Signer\Module\SwisscomAIS\BatchAsyncModule;
+use setasign\SetaPDF\Signer\Module\SwisscomAIS\BatchProcessData;
 use setasign\SetaPDF\Signer\Module\SwisscomAIS\SignException;
 
 date_default_timezone_set('Europe/Berlin');
@@ -58,7 +59,7 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
         ],
         [
             'in' => 'files/lenstown/Laboratory-Report.pdf',
-            'out' => 'output/lenstown-signed-on-demand.pdf',
+            'out' => new SetaPDF_Core_Writer_File('output/lenstown-signed-on-demand.pdf'),
             'tmp' => SetaPDF_Core_Writer_TempFile::createTempPath()
         ],
         [
@@ -68,8 +69,11 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
         ],
         [
             'in' => 'files/camtown/Laboratory-Report.pdf',
-            'out' => 'output/camtown-signed-on-demand.pdf',
-            'tmp' => SetaPDF_Core_Writer_TempFile::createTempPath()
+            'out' => new SetaPDF_Core_Writer_String(),
+            'tmp' => SetaPDF_Core_Writer_TempFile::createTempPath(),
+            'metadata' => [
+                'filename' => 'camtown-signed-on-demand.pdf'
+            ]
         ],
     ];
 
@@ -123,6 +127,7 @@ HTML;
     return;
 }
 
+/** @var BatchProcessData $processData */
 $processData = $_SESSION[__FILE__]['processData'];
 $batch->setProcessData($processData);
 
@@ -164,15 +169,18 @@ $files = [];
 foreach ($processData->getDocumentsData() as $documentData) {
     $writer = $documentData->getWriter();
     if ($writer instanceof SetaPDF_Core_Writer_File) {
-        $files[] = $writer->getPath();
+        $files[basename($writer->getPath())] = $writer->getPath();
+    // for demonstration purpose we show how to use individual metadata to store e.g. a filename
+    } elseif ($writer instanceof SetaPDF_Core_Writer_String) {
+        $files[$documentData->getMetadata()['filename']] = 'data:application/pdf;base64,' . base64_encode($writer->getBuffer());
     }
 }
 ?>
  Signed documents:<br />
 
 <ul>
-    <?php foreach ($files as $file): ?>
-    <li><a href="<?php echo $file;?>" download target="_blank"><?php echo basename($file);?></a></li>
+    <?php foreach ($files as $name => $file): ?>
+    <li><a href="<?php echo $file;?>" download="<?php echo htmlspecialchars($name);?>" target="_blank"><?php echo htmlspecialchars($name);?></a></li>
     <?php endforeach; ?>
 </ul>
 

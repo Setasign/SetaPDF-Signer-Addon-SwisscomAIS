@@ -45,10 +45,8 @@ $httpClient = new GuzzleClient($guzzleOptions);
 // only required if you are using guzzle < 7
 $httpClient = new Psr18Wrapper($httpClient);
 
-// create an HTTP writer
-$writer = new SetaPDF_Core_Writer_Http('Swisscom.pdf');
 // let's get the document
-$document = SetaPDF_Core_Document::loadByFilename('files/tektown/Laboratory-Report.pdf', $writer);
+$document = SetaPDF_Core_Document::loadByFilename('files/tektown/Laboratory-Report.pdf');
 
 // now let's create a signer instance
 $signer = new SetaPDF_Signer($document);
@@ -89,6 +87,8 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
     );
 
     $processData = $swisscomModule->initSignature($tmpDocument, $fieldName);
+    // inject individual metadata into the process data
+    $processData->setMetadata(['filename' => 'Swisscom.pdf']);
 
     // For the purpose of this demo we just serialize the processData into the session.
     // You could use e.g. a database or a dedicated directory on your server.
@@ -170,7 +170,10 @@ try {
     $signer->saveSignature($processData->getTmpDocument(), $signResult);
 
     // add DSS
-    $document = SetaPDF_Core_Document::loadByFilename($tmpWriter->getPath(), $writer);
+    $document = SetaPDF_Core_Document::loadByFilename($tmpWriter->getPath());
+    // use the filename stored in the process data metadata to create a writer instance
+    $writer = new SetaPDF_Core_Writer_Http($processData->getMetadata()['filename']);
+    $document->setWriter($writer);
     $swisscomModule->updateDss($document, $processData->getFieldName());
     $document->save()->finish();
 

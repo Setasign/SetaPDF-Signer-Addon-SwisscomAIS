@@ -16,6 +16,11 @@ abstract class AbstractProcessData
      */
     protected $pendingResponseId;
 
+    /**
+     * @var array
+     */
+    protected $metadata = [];
+
     public function __construct(string $pendingRequestId, string $pendingResponseId)
     {
         $this->pendingRequestId = $pendingRequestId;
@@ -30,5 +35,20 @@ abstract class AbstractProcessData
     public function getPendingRequestId(): string
     {
         return $this->pendingRequestId;
+    }
+
+    /**
+     * This method allows you to inject foreign data into the process data object.
+     *
+     * @param array $metadata
+     */
+    public function setMetadata(array $metadata): void
+    {
+        $this->metadata = $metadata;
+    }
+
+    public function getMetadata(): array
+    {
+        return $this->metadata;
     }
 }
