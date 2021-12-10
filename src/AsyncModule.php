@@ -83,8 +83,16 @@ class AsyncModule extends AbstractAsyncModule
 
         $responseData = $this->callUrl('https://ais.swisscom.com/AIS-Server/rs/v1.0/pending', $requestData);
 
+        if (isset($responseData['Response'])) {
+            throw new Exception(\sprintf(
+                'Unexpected response! Result major "%s". Result minor "%s". Result message: %s',
+                $responseData['Response']['Result']['ResultMajor'],
+                $responseData['Response']['Result']['ResultMinor'],
+                $responseData['Response']['Result']['ResultMessage']['$']
+            ));
+        }
+
         if (!isset($responseData['SignResponse']['@RequestID'])) {
-            // TODO: More details! If e.g. the passed ResponseId is unknown $responseData['Response'] is returned
             throw new Exception('Invalid response!');
         }
 
