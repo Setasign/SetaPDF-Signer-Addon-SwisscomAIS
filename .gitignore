@@ -1,8 +1,7 @@
 /vendor
-/composer.lock
-/examples/mycertandkey.crt
-/examples/*.crt
-/examples/*.pfx
-/examples/credentials*
-/examples/output/*.pdf
+/composer.phar
+/examples/settings/*.crt
+/examples/settings/*.pfx
+/examples/settings/*.pem
+/examples/settings/*.php
 /examples/_tmp/.ht*

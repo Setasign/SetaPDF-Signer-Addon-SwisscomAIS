@@ -1,9 +1,9 @@
 <?php
-/* This demo shows you how to create a simple signature through the Swisscom All-in Signing Service including a
- * timestamp signature.
+/* This demo shows you how to create a signature through the Swisscom All-in Signing Service including a timestamp
+ * signature.
  *
- * It uses the signature standard "PDF" which embed the revocation information in the CMS container.
- * There are nor revocation information added for the timestamp signature.
+ * It uses the signature standard "PAdES-baseline" and the revocation information of both signature and timestamp
+ * are added to the Document Security Store (DSS) afterwards to have LTV enabled (PAdES Signature Level: B-LT).
  */
 
 use GuzzleHttp\Client as GuzzleClient;
@@ -40,14 +40,14 @@ $httpClient = new GuzzleClient($guzzleOptions);
 $httpClient = new Psr18Wrapper($httpClient);
 
 // create an HTTP writer
-$writer = new SetaPDF_Core_Writer_Http('Swisscom.pdf');
+$writer = new SetaPDF_Core_Writer_Http('Swisscom-ltv.pdf');
 // let's get the document
-$document = SetaPDF_Core_Document::loadByFilename('files/camtown/Laboratory-Report.pdf', $writer);
+$document = SetaPDF_Core_Document::loadByFilename('files/camtown/Laboratory-Report.pdf');
 
 // now let's create a signer instance
 $signer = new SetaPDF_Signer($document);
 $signer->setAllowSignatureContentLengthChange(false);
-$signer->setSignatureContentLength(36000);
+$signer->setSignatureContentLength(30000);
 
 // set some signature properties
 $signer->setLocation($_SERVER['SERVER_NAME']);
@@ -59,12 +59,20 @@ $signer->setSignatureFieldName($field->getQualifiedName());
 
 // create a Swisscom AIS module instance
 $module = new Module($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
-$module->setSignatureStandard('PDF');
+// additionally, the signature should include a qualified timestamp
 $module->setAddTimestamp(true);
 
 try {
+    $tmpWriter = new SetaPDF_Core_Writer_TempFile();
+    $document->setWriter($tmpWriter);
+
     // sign the document with the use of the module
     $signer->sign($module);
+
+    $document = SetaPDF_Core_Document::loadByFilename($tmpWriter->getPath(), $writer);
+
+    $module->updateDss($document, $field->getQualifiedName());
+    $document->save()->finish();
 } catch (SignException $e) {
     echo 'Error in SwisscomAIS: ' . $e->getMessage() . ' with code ' . $e->getCode() . '<br />';
     /* Get the AIS Error details */
