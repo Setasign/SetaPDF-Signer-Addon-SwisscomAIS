@@ -79,30 +79,6 @@ component. If you want to use it with an evaluation version please use following
 }
 ```
 
-### Without Composer
-
-It's recommend to use composer otherwise you have to resolve the depency tree manually. You will require:
-
-- [SetaPDF-Signer component](https://www.setasign.com/signer)
-- [PSR-7 interfaces](https://github.com/php-fig/http-message)
-- [PSR-17 interfaces](https://github.com/php-fig/http-factory)
-- [PSR-18 interfaces](https://github.com/php-fig/http-client)
-- PSR-7 implementation like [Guzzle PSR-7](https://github.com/guzzle/psr7)
-- PSR-17 implementation like [HTTP Factory for Guzzle](https://github.com/http-interop/http-factory-guzzle)
-- PSR-18 implementation like [Guzzle](https://github.com/guzzle/guzzle) (version 6 requires an [additional wrapper](https://github.com/mjelamanov/psr18-guzzle))
-
-Make sure, that the [SetaPDF-Signer component](https://www.setasign.com/signer)
-is [installed](https://manuals.setasign.com/setapdf-core-manual/installation/#index-2) and
-its [autoloader is registered](https://manuals.setasign.com/setapdf-core-manual/getting-started/#index-1) correctly.
-
-Then simply require the `src/autoload.php` file or register this package in your own PSR-4 compatible autoload implementation:
-
-```php
-$loader = new \Example\Psr4AutoloaderClass;
-$loader->register();
-$loader->addNamespace('setasign\SetaPDF\Signer\Module\SwisscomAIS', 'path/to/src/');
-```
-
 
 ## License
 
