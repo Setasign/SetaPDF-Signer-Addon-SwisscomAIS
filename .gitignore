@@ -5,3 +5,4 @@
 /examples/settings/*.pem
 /examples/settings/*.php
 /examples/_tmp/.ht*
+/auth.json
