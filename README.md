@@ -11,6 +11,8 @@ call.
 
 The implementation is based on the [All-in Signing Service Reference Guide Version 2.10](https://documents.swisscom.com/product/1000255-Digital_Signing_Service/Documents/Reference_Guide/Reference_Guide-All-in-Signing-Service-en.pdf).
 
+The form for requesting a test account at Swisscom includes the Claimed IDs for testing and is available [here](https://documents.swisscom.com/product/filestore/lib/2c3229a1-3e50-4f3d-a957-ec1b55ade6dc/orderpermanenttestaccount-de.pdf).
+
 ## Requirements
 To use this package you need credentials for the Swisscom AIS webservice.
 
@@ -59,26 +61,6 @@ Add following to your composer.json:
 and execute `composer update`. You need to define the `repository` to evaluate the dependency to the
 [SetaPDF-Signer](https://www.setasign.com/signer) component
 (see [here](https://getcomposer.org/doc/faqs/why-can%27t-composer-load-repositories-recursively.md) for more details).
-
-### Evaluation version
-
-By default, this packages depends on a licensed version of the [SetaPDF-Signer](https://www.setasign.com/signer)
-component. If you want to use it with an evaluation version please use following in your composer.json:
-
-```json
-{
-    "require": {
-        "setasign/setapdf-signer-addon-swisscomais": "dev-evaluation"
-    },
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://www.setasign.com/downloads/"
-        }
-    ]
-}
-```
-
 
 ## License
 
