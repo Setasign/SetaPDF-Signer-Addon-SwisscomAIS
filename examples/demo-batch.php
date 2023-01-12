@@ -65,7 +65,7 @@ $files = [
 
 // initiate a batch instance
 $batch = new BatchModule($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
-$batch->setSignatureContentLength(30000);
+$batch->setSignatureContentLength(33000);
 // the signatures should include a timestamp, too
 $batch->setAddTimestamp(true);
 

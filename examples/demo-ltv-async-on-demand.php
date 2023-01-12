@@ -54,7 +54,7 @@ $signer = new SetaPDF_Signer($document);
 $swisscomModule = new AsyncModule($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
 if (!array_key_exists(__FILE__, $_SESSION)) {
     $signer->setAllowSignatureContentLengthChange(false);
-    $signer->setSignatureContentLength(30000);
+    $signer->setSignatureContentLength(34000);
 
     // set some signature properties
     $signer->setLocation($_SERVER['SERVER_NAME']);
@@ -109,7 +109,7 @@ if (!array_key_exists(__FILE__, $_SESSION)) {
         echo <<<HTML
 <script type="text/javascript">
 function openLink () {
-    window.open(${url}, '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes');
+    window.open({$url}, '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes');
     window.setTimeout(function () {window.location = window.location.pathname;}, 5000);
 }
 </script>
