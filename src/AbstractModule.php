@@ -306,7 +306,12 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
                 $ocspEntries = [$ocspEntries];
             }
             foreach ($ocspEntries as $ocspEntry) {
-                $ocsps[] = \base64_decode($ocspEntry);
+                $ocsp = new \SetaPDF_Signer_Ocsp_Response(\base64_decode($ocspEntry));
+                // extract certificates from OCSP response
+                foreach ($ocsp->getCertificates()->getAll() as $certificate) {
+                    $certificates[] = $certificate;
+                }
+                $ocsps[] = $ocsp;
             }
         }
 
