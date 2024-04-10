@@ -142,7 +142,7 @@ class BatchAsyncModule extends AbstractAsyncModule
             $no++;
         }
 
-        $requestId = \uniqid();
+        $requestId = \uniqid('Seta', true);
         $requestData = $this->buildSignRequestData(
             $requestId,
             $files

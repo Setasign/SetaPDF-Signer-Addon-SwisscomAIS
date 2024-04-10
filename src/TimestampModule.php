@@ -37,7 +37,7 @@ class TimestampModule extends AbstractModule implements \SetaPDF_Signer_Timestam
     public function createTimestamp($data): string
     {
         $digest = \base64_encode($this->generateHash($data));
-        $requestId = \uniqid();
+        $requestId = \uniqid('Seta', true);
         $requestData = $this->buildSignRequestData(
             $requestId,
             [['algorithm' => $this->getDigestMethod(), 'digest' => $digest]]

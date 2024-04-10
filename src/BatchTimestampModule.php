@@ -110,7 +110,7 @@ class BatchTimestampModule extends AbstractModule
             $no++;
         }
 
-        $requestId = \uniqid();
+        $requestId = \uniqid('Seta', true);
         $requestData = $this->buildSignRequestData($requestId, $files);
 
         $responseData = $this->callUrl('https://ais.swisscom.com/AIS-Server/rs/v1.0/sign', $requestData);

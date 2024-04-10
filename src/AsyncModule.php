@@ -33,7 +33,7 @@ class AsyncModule extends AbstractAsyncModule
         }
 
         $digest = \base64_encode($this->generateHash($tmpPath));
-        $requestId = \uniqid();
+        $requestId = \uniqid('Seta', true);
         $requestData = $this->buildSignRequestData(
             $requestId,
             [['algorithm' => $this->getDigestMethod(), 'digest' => $digest]]

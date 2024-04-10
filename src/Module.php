@@ -15,7 +15,7 @@ class Module extends AbstractModule implements \SetaPDF_Signer_Signature_Module_
     public function createSignature(\SetaPDF_Core_Reader_FilePath $tmpPath): string
     {
         $digest = \base64_encode($this->generateHash($tmpPath));
-        $requestId = \uniqid();
+        $requestId = \uniqid('Seta', true);
         $requestData = $this->buildSignRequestData(
             $requestId,
             [['algorithm' => $this->getDigestMethod(), 'digest' => $digest]]
