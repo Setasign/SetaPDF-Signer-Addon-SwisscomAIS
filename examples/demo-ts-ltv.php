@@ -36,8 +36,6 @@ $guzzleOptions = [
 ];
 
 $httpClient = new GuzzleClient($guzzleOptions);
-// only required if you are using guzzle < 7
-$httpClient = new Psr18Wrapper($httpClient);
 
 // create an HTTP writer
 $writer = new SetaPDF_Core_Writer_Http('Swisscom-Ts-Ltv.pdf');

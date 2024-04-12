@@ -44,8 +44,6 @@ $guzzleOptions = [
 ];
 
 $httpClient = new GuzzleClient($guzzleOptions);
-// only required if you are using guzzle < 7
-$httpClient = new Psr18Wrapper($httpClient);
 
 // let's get the document
 $document = SetaPDF_Core_Document::loadByFilename('files/tektown/Laboratory-Report.pdf');

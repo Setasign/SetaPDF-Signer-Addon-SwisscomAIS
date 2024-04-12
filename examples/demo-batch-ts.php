@@ -35,8 +35,6 @@ $guzzleOptions = [
 ];
 
 $httpClient = new GuzzleClient($guzzleOptions);
-// only required if you are using guzzle < 7
-$httpClient = new Psr18Wrapper($httpClient);
 
 // create a re-usable array of filenames (in/out)
 $files = [

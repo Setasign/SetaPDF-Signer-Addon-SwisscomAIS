@@ -45,8 +45,6 @@ $guzzleOptions = [
 ];
 
 $httpClient = new GuzzleClient($guzzleOptions);
-// only required if you are using guzzle < 7
-$httpClient = new Psr18Wrapper($httpClient);
 
 // initiate a batch instance
 $batch = new BatchAsyncModule($settings['customerId'], $httpClient, new RequestFactory(), new StreamFactory());
