@@ -65,6 +65,14 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
      */
     protected $signatureStandard = 'PAdES-Baseline';
 
+    /**
+     * Defines whether OCSP responses should be optimized or not when they are added to the DSS container.
+     *
+     * @var bool
+     * @see \SetaPDF_Signer_DocumentSecurityStore::setOptimizeOcspResponses()
+     */
+    protected $optimizeOcspResponses = true;
+
     public function __construct(
         string $identity,
         ClientInterface $httpClient,
@@ -271,11 +279,38 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
     }
 
     /**
+     * Define whether OCSP responses should be optimized or not when embedded into the DSS container.
+     *
+     * By default, the certificates are removed from an OCSP response and stored in the DSS. If this property is set to
+     * false the certificates are embedded twice (DSS + OCSP). This flag was introduced because there are validation
+     * enginges on the road which EXPECTS the certificates in the optional field of the OCSP response (e.g.
+     * https://www.validator.admin.ch/).
+     *
+     * @param bool $optimizeOcspResponses
+     */
+    public function setOptimizeOcspResponses(bool $optimizeOcspResponses): void
+    {
+        $this->optimizeOcspResponses = $optimizeOcspResponses;
+    }
+
+    /**
+     * Get whether OCSP responses should be optimized or not.
+     *
+     * @see setOptimizeOcspResponses()
+     * @return bool
+     */
+    public function getOptimizeOcspResponses(): bool
+    {
+        return $this->optimizeOcspResponses;
+    }
+
+    /**
      * Updates the document security store by the last received revoke information.
      *
      * @param \SetaPDF_Core_Document $document
      * @param string $fieldName The signature field, that was signed.
      * @throws \SetaPDF_Signer_Asn1_Exception
+     * @throws \SetaPDF_Signer_Exception
      */
     public function updateDss(\SetaPDF_Core_Document $document, string $fieldName)
     {
@@ -316,6 +351,7 @@ abstract class AbstractModule implements \SetaPDF_Signer_Signature_DocumentInter
         }
 
         $dss = new \SetaPDF_Signer_DocumentSecurityStore($document);
+        $dss->setOptimizeOcspResponses($this->getOptimizeOcspResponses());
         $dss->addValidationRelatedInfoByFieldName($fieldName, $crls, $ocsps, $certificates);
     }
 
