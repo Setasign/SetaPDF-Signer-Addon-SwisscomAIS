@@ -46,10 +46,12 @@ class DocumentData
 
     public function getReader(): \SetaPDF_Core_Reader_ReaderInterface
     {
-        return \unserialize($this->serializedReader,  [
+        return \unserialize($this->serializedReader, [
             'allowed_classes' => [
-                \SetaPDF_Core_Reader_String::class,
-                \SetaPDF_Core_Reader_File::class
+                'setasign\SetaPDF2\Core\Reader\StringReader',
+                'setasign\SetaPDF2\Core\Reader\FileReader',
+                'SetaPDF_Core_Reader_String',
+                'SetaPDF_Core_Reader_File'
             ]
         ]);
     }
